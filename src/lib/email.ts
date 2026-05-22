@@ -1,0 +1,92 @@
+import { Resend } from "resend";
+
+export const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  if (!resend) {
+    console.log("[email stub]", { to, subject });
+    return;
+  }
+
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? "RentalsLogic <noreply@rentalslogic.com>",
+    to,
+    subject,
+    html,
+  });
+}
+
+export async function sendTenantInvite({
+  to,
+  tenantName,
+  propertyAddress,
+  inviteUrl,
+}: {
+  to: string;
+  tenantName: string;
+  propertyAddress: string;
+  inviteUrl: string;
+}) {
+  await sendEmail({
+    to,
+    subject: `You've been invited to RentalsLogic — ${propertyAddress}`,
+    html: `
+      <h2>Welcome to RentalsLogic</h2>
+      <p>Hi ${tenantName},</p>
+      <p>You've been invited as a tenant for <strong>${propertyAddress}</strong>.</p>
+      <p><a href="${inviteUrl}">Accept your invitation</a> to view reports, submit maintenance requests, and sign documents.</p>
+    `,
+  });
+}
+
+export async function sendReportReadyEmail({
+  to,
+  reportTitle,
+  reportUrl,
+}: {
+  to: string;
+  reportTitle: string;
+  reportUrl: string;
+}) {
+  await sendEmail({
+    to,
+    subject: `Report ready for review: ${reportTitle}`,
+    html: `
+      <h2>Inspection report ready</h2>
+      <p>A new report is ready for your review: <strong>${reportTitle}</strong></p>
+      <p><a href="${reportUrl}">Review report</a></p>
+    `,
+  });
+}
+
+export async function sendCertificateExpiryEmail({
+  to,
+  propertyAddress,
+  certType,
+  expiryDate,
+}: {
+  to: string;
+  propertyAddress: string;
+  certType: string;
+  expiryDate: string;
+}) {
+  await sendEmail({
+    to,
+    subject: `Certificate expiring: ${certType} — ${propertyAddress}`,
+    html: `
+      <h2>Certificate expiry reminder</h2>
+      <p>The <strong>${certType}</strong> certificate for <strong>${propertyAddress}</strong> expires on ${expiryDate}.</p>
+      <p>Please renew and upload the updated certificate.</p>
+    `,
+  });
+}

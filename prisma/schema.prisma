@@ -1,0 +1,406 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  LANDLORD
+  TENANT
+  ADMIN
+}
+
+enum MembershipTier {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum PropertyType {
+  ROOM
+  APARTMENT
+  HOUSE
+}
+
+enum RentPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum RoomType {
+  BEDROOM
+  LOUNGE
+  KITCHEN
+  BATHROOM
+  DINING_ROOM
+  HALLWAY
+  GARAGE
+  GARDEN
+  OTHER
+}
+
+enum MeterType {
+  ELECTRIC
+  GAS
+  WATER
+}
+
+enum CertificateType {
+  GAS_SAFETY
+  EPC
+  EICR
+  OTHER
+}
+
+enum TenancyStatus {
+  PENDING
+  ACTIVE
+  ENDED
+}
+
+enum InspectionType {
+  INVENTORY
+  CHECK_IN
+  INTERIM
+  CHECK_OUT
+}
+
+enum ReportStatus {
+  DRAFT
+  SENT
+  TENANT_REVIEW
+  APPROVED
+  DISPUTED
+  SIGNED
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DocumentType {
+  LEASE
+  INVENTORY
+  CERTIFICATE
+  OTHER
+}
+
+model User {
+  id               String         @id @default(cuid())
+  clerkId          String         @unique
+  email            String         @unique
+  fullName         String?
+  role             UserRole       @default(LANDLORD)
+  membershipTier   MembershipTier @default(BASIC)
+  stripeCustomerId String?        @unique
+  stripeSubId      String?
+  membershipExpiry DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  properties          Property[]
+  tenantProfile       TenantProfile?
+  tenancies           Tenancy[]           @relation("TenantUser")
+  tenantComments      TenantComment[]
+  signatures          Signature[]
+  maintenanceRequests MaintenanceRequest[] @relation("Reporter")
+  activityLogs        ActivityLog[]
+}
+
+model TenantProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Property {
+  id           String       @id @default(cuid())
+  ownerId      String
+  propertyType PropertyType
+  address      String
+  city         String?
+  postcode     String?
+  rentAmount   Decimal      @db.Decimal(10, 2)
+  rentPeriod   RentPeriod   @default(MONTHLY)
+  region       String       @default("england")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  owner               User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  rooms               Room[]
+  tenancies           Tenancy[]
+  meterReadings       MeterReading[]
+  certificates        Certificate[]
+  inspectionReports   InspectionReport[]
+  maintenanceRequests MaintenanceRequest[]
+  documents           Document[]
+  activityLogs        ActivityLog[]
+
+  @@index([ownerId])
+}
+
+model Room {
+  id         String   @id @default(cuid())
+  propertyId String
+  roomType   RoomType
+  name       String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property       Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  inventoryItems InventoryItem[]
+  roomPhotos     RoomPhoto[]
+  reportSections ReportSection[]
+
+  @@index([propertyId])
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  roomId      String
+  name        String
+  description String?
+  condition   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  room   Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  photos InventoryPhoto[]
+
+  @@index([roomId])
+}
+
+model InventoryPhoto {
+  id              String   @id @default(cuid())
+  inventoryItemId String
+  url             String
+  caption         String?
+  createdAt       DateTime @default(now())
+
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryItemId])
+}
+
+model RoomPhoto {
+  id        String   @id @default(cuid())
+  roomId    String
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+}
+
+model Tenancy {
+  id             String        @id @default(cuid())
+  propertyId     String
+  tenantUserId   String?
+  tenantName     String
+  tenantEmail    String
+  tenantPhone    String?
+  leaseStartDate DateTime      @db.Date
+  leaseEndDate   DateTime      @db.Date
+  status         TenancyStatus @default(PENDING)
+  inviteToken    String?       @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant   User?    @relation("TenantUser", fields: [tenantUserId], references: [id])
+
+  @@index([propertyId])
+  @@index([tenantUserId])
+  @@index([tenantEmail])
+}
+
+model MeterReading {
+  id           String    @id @default(cuid())
+  propertyId   String
+  readingType  MeterType
+  readingValue Decimal   @db.Decimal(10, 2)
+  readingDate  DateTime  @db.Date
+  photoUrl     String?
+  submittedBy  String?
+  createdAt    DateTime  @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model Certificate {
+  id           String          @id @default(cuid())
+  propertyId   String
+  type         CertificateType
+  issueDate    DateTime        @db.Date
+  expiryDate   DateTime        @db.Date
+  fileUrl      String?
+  notes        String?
+  reminderSent Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([expiryDate])
+}
+
+model InspectionReport {
+  id              String         @id @default(cuid())
+  propertyId      String
+  type            InspectionType
+  status          ReportStatus   @default(DRAFT)
+  title           String
+  compareReportId String?
+  checklistData   Json?
+  signedAt        DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  property      Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  compareReport InspectionReport?  @relation("ReportComparison", fields: [compareReportId], references: [id])
+  comparedBy    InspectionReport[] @relation("ReportComparison")
+  sections      ReportSection[]
+  signatures    Signature[]
+
+  @@index([propertyId])
+}
+
+model ReportSection {
+  id       String @id @default(cuid())
+  reportId String
+  roomId   String?
+  title    String
+  sortOrder Int   @default(0)
+  notes    String?
+
+  report InspectionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  room   Room?            @relation(fields: [roomId], references: [id])
+  items  ReportItem[]
+
+  @@index([reportId])
+}
+
+model ReportItem {
+  id          String  @id @default(cuid())
+  sectionId   String
+  name        String
+  condition   String?
+  cleanliness String?
+  notes       String?
+  photoUrls   String[]
+  sortOrder   Int     @default(0)
+
+  section        ReportSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  tenantComments TenantComment[]
+
+  @@index([sectionId])
+}
+
+model TenantComment {
+  id           String   @id @default(cuid())
+  reportItemId String
+  userId       String
+  comment      String
+  photoUrls    String[]
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  reportItem ReportItem @relation(fields: [reportItemId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@index([reportItemId])
+}
+
+model MaintenanceRequest {
+  id          String              @id @default(cuid())
+  propertyId  String
+  reporterId  String?
+  title       String
+  description String
+  priority    MaintenancePriority @default(MEDIUM)
+  status      MaintenanceStatus   @default(OPEN)
+  photoUrls   String[]
+  contractorNotes String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reporter User?    @relation("Reporter", fields: [reporterId], references: [id])
+
+  @@index([propertyId])
+  @@index([status])
+}
+
+model Document {
+  id           String       @id @default(cuid())
+  propertyId   String
+  tenancyId    String?
+  documentType DocumentType @default(OTHER)
+  title        String
+  storagePath  String
+  isSigned     Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  signatures Signature[]
+
+  @@index([propertyId])
+}
+
+model Signature {
+  id            String   @id @default(cuid())
+  documentId    String?
+  reportId      String?
+  signerId      String
+  signatureData String   @db.Text
+  ipAddress     String?
+  signedAt      DateTime @default(now())
+
+  document Document?         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  report   InspectionReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  signer   User              @relation(fields: [signerId], references: [id])
+
+  @@index([signerId])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  propertyId String?
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@index([propertyId])
+  @@index([userId])
+  @@index([createdAt])
+}

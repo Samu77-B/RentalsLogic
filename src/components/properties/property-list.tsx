@@ -1,0 +1,178 @@
+"use client";
+
+import { useState } from "react";
+import useSWR from "swr";
+import Link from "next/link";
+import { Plus, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+export function PropertyList() {
+  const { data: properties, mutate, isLoading } = useSWR("/api/properties", fetcher);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    address: "",
+    city: "",
+    postcode: "",
+    propertyType: "APARTMENT",
+    rentAmount: "",
+    rentPeriod: "MONTHLY",
+  });
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await fetch("/api/properties", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, rentAmount: parseFloat(form.rentAmount) }),
+    });
+    if (res.ok) {
+      setOpen(false);
+      setForm({
+        address: "",
+        city: "",
+        postcode: "",
+        propertyType: "APARTMENT",
+        rentAmount: "",
+        rentPeriod: "MONTHLY",
+      });
+      mutate();
+    }
+  }
+
+  if (isLoading) return <p className="text-muted-foreground">Loading properties...</p>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Properties</h2>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger render={<Button><Plus className="mr-2 h-4 w-4" />Add Property</Button>} />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Property</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  required
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postcode">Postcode</Label>
+                  <Input
+                    id="postcode"
+                    value={form.postcode}
+                    onChange={(e) => setForm({ ...form, postcode: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Type</Label>
+                  <Select
+                    value={form.propertyType}
+                    onValueChange={(v) => setForm({ ...form, propertyType: v ?? "APARTMENT" })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ROOM">Room</SelectItem>
+                      <SelectItem value="APARTMENT">Apartment</SelectItem>
+                      <SelectItem value="HOUSE">House</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="rent">Rent (£)</Label>
+                  <Input
+                    id="rent"
+                    type="number"
+                    required
+                    value={form.rentAmount}
+                    onChange={(e) => setForm({ ...form, rentAmount: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full">Create Property</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {!properties?.length ? (
+        <Card>
+          <CardContent className="flex flex-col items-center py-12">
+            <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground">No properties yet. Add your first property.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {properties.map((property: {
+            id: string;
+            address: string;
+            city?: string;
+            propertyType: string;
+            rentAmount: string;
+            rentPeriod: string;
+            _count?: { rooms: number; tenancies: number };
+          }) => (
+            <Link key={property.id} href={`/dashboard/properties/${property.id}`}>
+              <Card className="transition-shadow hover:shadow-md">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-lg">{property.address}</CardTitle>
+                    <Badge variant="secondary">{property.propertyType}</Badge>
+                  </div>
+                  {property.city && (
+                    <p className="text-sm text-muted-foreground">{property.city}</p>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <p className="font-semibold">
+                    £{property.rentAmount}/{property.rentPeriod.toLowerCase()}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {property._count?.rooms ?? 0} rooms · {property._count?.tenancies ?? 0} tenants
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
