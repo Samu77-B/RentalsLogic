@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
@@ -7,17 +8,45 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/terms",
   "/privacy",
+  "/api/setup-check",
   "/api/stripe/webhook",
   "/api/tenancies/accept(.*)",
   "/manifest.webmanifest",
   "/sw.js",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+function isClerkConfigured() {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY?.trim() &&
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
+  );
+}
+
+const clerkHandler = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
 });
+
+export default function middleware(request: NextRequest, event: unknown) {
+  if (request.nextUrl.pathname === "/api/setup-check") {
+    const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
+    return NextResponse.json({
+      ok: isClerkConfigured(),
+      clerkSecret: Boolean(process.env.CLERK_SECRET_KEY?.trim()),
+      clerkPublic: Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()),
+      database: Boolean(databaseUrl),
+      databaseLooksValid: databaseUrl.startsWith("postgresql://"),
+      appUrl: process.env.NEXT_PUBLIC_APP_URL ?? null,
+    });
+  }
+
+  if (!isClerkConfigured()) {
+    return NextResponse.next();
+  }
+
+  return clerkHandler(request, event as Parameters<typeof clerkHandler>[1]);
+}
 
 export const config = {
   matcher: [

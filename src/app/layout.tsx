@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRegister } from "@/components/shared/pwa-register";
 import { OfflineSync } from "@/components/shared/offline-sync";
+import { SetupRequired, isClerkConfigured } from "@/components/shared/setup-required";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (!isClerkConfigured()) {
+    return (
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col font-sans">
+          <SetupRequired />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <ClerkProvider>
       <html
