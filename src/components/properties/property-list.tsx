@@ -3,7 +3,8 @@
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { Plus, Building2 } from "lucide-react";
+import { Plus, Building2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,8 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 export function PropertyList() {
   const { data: properties, mutate, isLoading } = useSWR("/api/properties", fetcher);
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     address: "",
     city: "",
@@ -40,12 +43,29 @@ export function PropertyList() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/properties", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, rentAmount: parseFloat(form.rentAmount) }),
-    });
-    if (res.ok) {
+    setSaving(true);
+    setError(null);
+
+    const rentAmount = parseFloat(form.rentAmount);
+    if (Number.isNaN(rentAmount)) {
+      setError("Please enter a valid rent amount.");
+      setSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/properties", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, rentAmount }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create property");
+      }
+
+      toast.success("Property created");
       setOpen(false);
       setForm({
         address: "",
@@ -56,6 +76,12 @@ export function PropertyList() {
         rentPeriod: "MONTHLY",
       });
       mutate();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create property";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -65,7 +91,7 @@ export function PropertyList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Properties</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (!next) setError(null); }}>
           <DialogTrigger render={<Button><Plus className="mr-2 h-4 w-4" />Add Property</Button>} />
           <DialogContent>
             <DialogHeader>
@@ -125,7 +151,21 @@ export function PropertyList() {
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full">Create Property</Button>
+              {error && (
+                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+              <Button type="submit" className="w-full" disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Property"
+                )}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

@@ -132,6 +132,7 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
     fetcher
   );
   const [open, setOpen] = useState(false);
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
   const [form, setForm] = useState({
     tenantName: "",
     tenantEmail: "",
@@ -142,13 +143,23 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/properties/${propertyId}/tenants`, {
+    const res = await fetch(`/api/properties/${propertyId}/tenants`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    const data = await res.json();
+    if (res.ok && data.inviteUrl) {
+      setLastInviteUrl(data.inviteUrl);
+    }
     setOpen(false);
     mutate();
+  }
+
+  function inviteLink(token?: string | null) {
+    if (!token) return null;
+    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    return `${base.replace(/\/$/, "")}/tenant/accept?token=${token}`;
   }
 
   return (
@@ -188,11 +199,21 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
         </Dialog>
       </div>
 
+      {lastInviteUrl && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="py-4">
+            <p className="text-sm font-medium">Tenant invite link (copy and send manually for testing)</p>
+            <p className="mt-2 break-all text-xs text-muted-foreground">{lastInviteUrl}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {tenants?.map((t: {
         id: string;
         tenantName: string;
         tenantEmail: string;
         status: string;
+        inviteToken?: string | null;
         leaseStartDate: string;
         leaseEndDate: string;
       }) => (
@@ -208,6 +229,11 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
             <p className="mt-1 text-sm">
               {new Date(t.leaseStartDate).toLocaleDateString()} – {new Date(t.leaseEndDate).toLocaleDateString()}
             </p>
+            {t.status === "PENDING" && t.inviteToken && (
+              <p className="mt-2 break-all text-xs text-primary">
+                Invite: {inviteLink(t.inviteToken)}
+              </p>
+            )}
           </CardContent>
         </Card>
       ))}

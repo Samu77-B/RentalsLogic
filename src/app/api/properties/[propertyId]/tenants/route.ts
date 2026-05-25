@@ -66,7 +66,7 @@ export async function POST(request: Request, { params }: Params) {
       inviteUrl,
     });
 
-    return jsonOk(tenancy, 201);
+    return jsonOk({ ...tenancy, inviteUrl }, 201);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create tenant";
     return jsonError(message, message === "Unauthorized" ? 401 : 500);

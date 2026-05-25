@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireLandlord } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/api";
+import { jsonError, jsonOk, formatApiError } from "@/lib/api";
 import { getPropertyLimit } from "@/lib/stripe";
 import { getLandlordProperties } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -12,8 +12,9 @@ export async function GET() {
     const properties = await getLandlordProperties(user.id);
     return jsonOk(properties);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch properties";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    console.error("GET /api/properties failed:", error);
+    const { message, status } = formatApiError(error, "Failed to fetch properties");
+    return jsonError(message, status);
   }
 }
 
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
 
     return jsonOk(property, 201);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create property";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    console.error("POST /api/properties failed:", error);
+    const { message, status } = formatApiError(error, "Failed to create property");
+    return jsonError(message, status);
   }
 }
