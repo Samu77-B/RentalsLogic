@@ -33,6 +33,16 @@ export function formatApiError(
         status: 500,
       };
     }
+    if (
+      error.message.includes("must start with the protocol `postgresql://`") ||
+      error.message.includes("must start with the protocol postgresql://")
+    ) {
+      return {
+        message:
+          "DATABASE_URL is invalid. Use the Supabase Postgres URI (postgresql://...), not the https:// project URL.",
+        status: 500,
+      };
+    }
     return { message: error.message, status: 500 };
   }
 
