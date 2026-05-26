@@ -2,9 +2,9 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PropertyDetail } from "@/components/properties/property-detail";
 import {
   MeterReadingsPanel,
-  TenantsPanel,
   DocumentsPanel,
 } from "@/components/properties/property-panels";
+import { TenantsPanel } from "@/components/tenants/tenants-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Props = { params: Promise<{ propertyId: string }> };

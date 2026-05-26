@@ -97,6 +97,7 @@ enum DocumentType {
   LEASE
   INVENTORY
   CERTIFICATE
+  ID_VERIFICATION
   OTHER
 }
 
@@ -213,25 +214,60 @@ model RoomPhoto {
 }
 
 model Tenancy {
-  id             String        @id @default(cuid())
-  propertyId     String
-  tenantUserId   String?
-  tenantName     String
-  tenantEmail    String
-  tenantPhone    String?
-  leaseStartDate DateTime      @db.Date
-  leaseEndDate   DateTime      @db.Date
-  status         TenancyStatus @default(PENDING)
-  inviteToken    String?       @unique
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                       String        @id @default(cuid())
+  propertyId               String
+  tenantUserId             String?
+  tenantName               String
+  tenantEmail              String
+  tenantPhone              String?
+  previousAddress          String?
+  dateOfBirth              DateTime?     @db.Date
+  photoUrl                 String?
+  idDocumentType           String?
+  idDocumentNumber         String?
+  idDocumentUrl            String?
+  nationality              String?
+  employmentStatus         String?
+  employer                 String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+  rightToRentReference     String?
+  previousLandlordRef      String?
+  notes                    String?
+  leaseStartDate           DateTime      @db.Date
+  leaseEndDate             DateTime      @db.Date
+  status                   TenancyStatus @default(PENDING)
+  inviteToken              String?       @unique
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
 
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  tenant   User?    @relation("TenantUser", fields: [tenantUserId], references: [id])
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant     User?       @relation("TenantUser", fields: [tenantUserId], references: [id])
+  guarantors Guarantor[]
+  documents  Document[]
 
   @@index([propertyId])
   @@index([tenantUserId])
   @@index([tenantEmail])
+}
+
+model Guarantor {
+  id           String   @id @default(cuid())
+  tenancyId    String
+  fullName     String
+  address      String?
+  occupation   String?
+  employer     String?
+  email        String?
+  phone        String?
+  relationship String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenancy Tenancy @relation(fields: [tenancyId], references: [id], onDelete: Cascade)
+
+  @@index([tenancyId])
 }
 
 model MeterReading {
@@ -366,9 +402,11 @@ model Document {
   createdAt    DateTime     @default(now())
 
   property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenancy    Tenancy?    @relation(fields: [tenancyId], references: [id], onDelete: SetNull)
   signatures Signature[]
 
   @@index([propertyId])
+  @@index([tenancyId])
 }
 
 model Signature {

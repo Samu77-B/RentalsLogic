@@ -67,7 +67,8 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} RentalsLogic. All rights reserved.
+        <p>Tenants: use the invitation link in your email to access your portal.</p>
+        <p className="mt-2">© {new Date().getFullYear()} RentalsLogic. All rights reserved.</p>
       </footer>
     </div>
   );

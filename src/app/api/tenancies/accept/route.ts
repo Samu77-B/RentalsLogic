@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { jsonError, jsonOk } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { UserRole, TenancyStatus } from "@prisma/client";
@@ -23,8 +23,31 @@ export async function POST(request: Request) {
       return jsonError("Invite already accepted");
     }
 
-    const clerkUser = await prisma.user.findUnique({ where: { clerkId: userId } });
-    let user = clerkUser;
+    const clerkUser = await currentUser();
+    const clerkEmail =
+      clerkUser?.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)
+        ?.emailAddress ??
+      clerkUser?.emailAddresses[0]?.emailAddress ??
+      "";
+
+    if (
+      clerkEmail &&
+      tenancy.tenantEmail.toLowerCase() !== clerkEmail.toLowerCase()
+    ) {
+      return jsonError(
+        `Sign in with ${tenancy.tenantEmail} to accept this invitation.`,
+        403
+      );
+    }
+
+    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
+
+    if (user?.role === UserRole.LANDLORD) {
+      return jsonError(
+        "This account is registered as a landlord. Sign out and create a new account with the invited email, or use a different email address.",
+        403
+      );
+    }
 
     if (!user) {
       user = await prisma.user.create({
@@ -35,7 +58,7 @@ export async function POST(request: Request) {
           role: UserRole.TENANT,
         },
       });
-    } else if (user.role === UserRole.LANDLORD) {
+    } else if (user.role !== UserRole.TENANT) {
       await prisma.user.update({
         where: { id: user.id },
         data: { role: UserRole.TENANT },

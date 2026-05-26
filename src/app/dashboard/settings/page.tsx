@@ -8,10 +8,13 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
           <p className="text-muted-foreground">
-            Account settings are managed through your profile menu. Configure Clerk
-            metadata for role assignment (landlord/tenant).
+            Account details are managed through your profile menu (top right).
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Landlord accounts are created when you sign up from the homepage.
+            Tenant accounts are created when you accept an invitation from your landlord.
           </p>
         </CardContent>
       </Card>

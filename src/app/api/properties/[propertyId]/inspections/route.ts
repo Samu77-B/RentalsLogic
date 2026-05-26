@@ -1,24 +1,32 @@
-import { requireLandlord } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/api";
-import { isPropertyOwner } from "@/lib/permissions";
+import { requireAuth } from "@/lib/auth";
+import { jsonError, jsonOk, formatApiError } from "@/lib/api";
+import { canAccessProperty, isPropertyOwner } from "@/lib/permissions";
 import { ENGLAND_CHECKLIST } from "@/lib/checklists";
-import { sendReportReadyEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { InspectionType, ReportStatus } from "@prisma/client";
+import { InspectionType, ReportStatus, UserRole } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ propertyId: string }> };
 
 export async function GET(_request: Request, { params }: Params) {
   try {
-    const user = await requireLandlord();
+    const user = await requireAuth();
     const { propertyId } = await params;
 
-    if (!(await isPropertyOwner(user.id, propertyId))) {
+    if (!(await canAccessProperty(user.id, propertyId))) {
       return jsonError("Forbidden", 403);
     }
 
+    const isOwner = await isPropertyOwner(user.id, propertyId);
+
     const reports = await prisma.inspectionReport.findMany({
-      where: { propertyId },
+      where: isOwner
+        ? { propertyId }
+        : {
+            propertyId,
+            status: { in: [ReportStatus.SENT, ReportStatus.TENANT_REVIEW] },
+          },
       include: {
         sections: { include: { items: true } },
         signatures: true,
@@ -28,14 +36,18 @@ export async function GET(_request: Request, { params }: Params) {
 
     return jsonOk(reports);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch reports";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    const { message, status } = formatApiError(error, "Failed to fetch reports");
+    return jsonError(message, status);
   }
 }
 
 export async function POST(request: Request, { params }: Params) {
   try {
-    const user = await requireLandlord();
+    const user = await requireAuth();
+    if (user.role !== UserRole.LANDLORD && user.role !== UserRole.ADMIN) {
+      return jsonError("Forbidden", 403);
+    }
+
     const { propertyId } = await params;
     const body = await request.json();
 
@@ -92,18 +104,18 @@ export async function POST(request: Request, { params }: Params) {
 
     return jsonOk(report, 201);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create report";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    const { message, status } = formatApiError(error, "Failed to create report");
+    return jsonError(message, status);
   }
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(_request: Request, { params }: Params) {
   try {
-    const user = await requireLandlord();
-    const { propertyId } = await params;
+    await requireAuth();
+    await params;
     return jsonError("Use PATCH /api/inspections/[reportId]", 400);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    const { message, status } = formatApiError(error, "Failed");
+    return jsonError(message, status);
   }
 }

@@ -1,36 +1,57 @@
-import { requireLandlord } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/api";
-import { isPropertyOwner } from "@/lib/permissions";
+import { requireAuth } from "@/lib/auth";
+import { jsonError, jsonOk, formatApiError } from "@/lib/api";
+import { canAccessProperty, isPropertyOwner } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-import { DocumentType } from "@prisma/client";
+import { DocumentType, UserRole } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ propertyId: string }> };
 
 export async function GET(_request: Request, { params }: Params) {
   try {
-    const user = await requireLandlord();
+    const user = await requireAuth();
     const { propertyId } = await params;
 
-    if (!(await isPropertyOwner(user.id, propertyId))) {
+    if (!(await canAccessProperty(user.id, propertyId))) {
       return jsonError("Forbidden", 403);
     }
 
+    const isOwner = await isPropertyOwner(user.id, propertyId);
+
     const documents = await prisma.document.findMany({
-      where: { propertyId },
+      where: isOwner
+        ? { propertyId }
+        : {
+            propertyId,
+            OR: [
+              { tenancyId: null },
+              {
+                tenancy: {
+                  tenantUserId: user.id,
+                  status: "ACTIVE",
+                },
+              },
+            ],
+          },
       include: { signatures: true },
       orderBy: { createdAt: "desc" },
     });
 
     return jsonOk(documents);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch documents";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    const { message, status } = formatApiError(error, "Failed to fetch documents");
+    return jsonError(message, status);
   }
 }
 
 export async function POST(request: Request, { params }: Params) {
   try {
-    const user = await requireLandlord();
+    const user = await requireAuth();
+    if (user.role !== UserRole.LANDLORD && user.role !== UserRole.ADMIN) {
+      return jsonError("Forbidden", 403);
+    }
+
     const { propertyId } = await params;
     const body = await request.json();
 
@@ -50,7 +71,7 @@ export async function POST(request: Request, { params }: Params) {
 
     return jsonOk(document, 201);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create document";
-    return jsonError(message, message === "Unauthorized" ? 401 : 500);
+    const { message, status } = formatApiError(error, "Failed to create document");
+    return jsonError(message, status);
   }
 }
