@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import { Plus, Package, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,12 @@ import {
 import { FileUpload } from "@/components/shared/file-upload";
 import { CONDITION_OPTIONS, ROOM_TYPE_LABELS } from "@/lib/checklists";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { cache: "no-store" });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+};
 
 interface PropertyDetailProps {
   propertyId: string;
@@ -49,33 +55,103 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
   async function addRoom(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/properties/${propertyId}/rooms`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roomForm),
-    });
-    setRoomOpen(false);
-    setRoomForm({ name: "", roomType: "BEDROOM" });
-    mutate();
+    try {
+      const res = await fetch(`/api/properties/${propertyId}/rooms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(roomForm),
+      });
+      const room = await res.json();
+      if (!res.ok) throw new Error(room.error || "Failed to add room");
+
+      setRoomOpen(false);
+      setRoomForm({ name: "", roomType: "BEDROOM" });
+
+      await mutate(
+        (current) =>
+          current
+            ? {
+                ...current,
+                rooms: [
+                  ...(current.rooms ?? []),
+                  { ...room, inventoryItems: [], roomPhotos: [] },
+                ],
+              }
+            : current,
+        { revalidate: true }
+      );
+      toast.success("Room added");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add room");
+    }
   }
 
   async function addInventoryItem(e: React.FormEvent) {
     e.preventDefault();
     if (!inventoryOpen) return;
-    await fetch(`/api/rooms/${inventoryOpen}/inventory`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(itemForm),
-    });
-    setInventoryOpen(null);
-    setItemForm({ name: "", description: "", condition: "Good", photoUrls: [] });
-    mutate();
+    const roomId = inventoryOpen;
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/inventory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(itemForm),
+      });
+      const item = await res.json();
+      if (!res.ok) throw new Error(item.error || "Failed to add item");
+
+      setInventoryOpen(null);
+      setItemForm({ name: "", description: "", condition: "Good", photoUrls: [] });
+
+      await mutate(
+        (current) =>
+          current
+            ? {
+                ...current,
+                rooms: (current.rooms ?? []).map((room: { id: string; inventoryItems?: unknown[] }) =>
+                  room.id === roomId
+                    ? { ...room, inventoryItems: [...(room.inventoryItems ?? []), item] }
+                    : room
+                ),
+              }
+            : current,
+        { revalidate: true }
+      );
+      toast.success("Item added");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add item");
+    }
   }
 
   async function deleteItem(itemId: string) {
     if (!confirm("Delete this item?")) return;
-    await fetch(`/api/inventory/${itemId}`, { method: "DELETE" });
-    mutate();
+    try {
+      const res = await fetch(`/api/inventory/${itemId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete item");
+      }
+
+      await mutate(
+        (current) =>
+          current
+            ? {
+                ...current,
+                rooms: (current.rooms ?? []).map(
+                  (room: { inventoryItems?: Array<{ id: string }> }) => ({
+                    ...room,
+                    inventoryItems: (room.inventoryItems ?? []).filter(
+                      (item) => item.id !== itemId
+                    ),
+                  })
+                ),
+              }
+            : current,
+        { revalidate: true }
+      );
+      toast.success("Item deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete item");
+    }
   }
 
   if (isLoading) return <p>Loading...</p>;

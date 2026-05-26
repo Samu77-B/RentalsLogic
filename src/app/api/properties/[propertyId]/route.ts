@@ -4,6 +4,8 @@ import { isPropertyOwner } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { PropertyType, RentPeriod } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ propertyId: string }> };
 
 export async function GET(_request: Request, { params }: Params) {

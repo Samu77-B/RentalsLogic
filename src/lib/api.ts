@@ -29,7 +29,8 @@ export function formatApiError(
       error.message.includes("P1001")
     ) {
       return {
-        message: "Database connection failed. Check DATABASE_URL on Vercel.",
+        message:
+          "Database connection failed. On Vercel use Supabase Transaction pooler (port 6543) with ?pgbouncer=true — not the direct port 5432 URL.",
         status: 500,
       };
     }
