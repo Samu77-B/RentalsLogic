@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
-import { Plus, Package, Trash2, Pencil } from "lucide-react";
+import { Plus, Package, Trash2, Pencil, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -78,6 +78,31 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     condition: "Good",
     photoUrls: [] as string[],
   });
+  const [itemSaving, setItemSaving] = useState(false);
+
+  const emptyItemForm = {
+    name: "",
+    description: "",
+    condition: "Good",
+    photoUrls: [] as string[],
+  };
+
+  function appendItemToRoom(roomId: string, item: InventoryItem) {
+    return mutate(
+      (current) =>
+        current
+          ? {
+              ...current,
+              rooms: (current.rooms ?? []).map((room) =>
+                room.id === roomId
+                  ? { ...room, inventoryItems: [...(room.inventoryItems ?? []), item] }
+                  : room
+              ),
+            }
+          : current,
+      { revalidate: false }
+    );
+  }
 
   async function addRoom(e: React.FormEvent) {
     e.preventDefault();
@@ -151,8 +176,9 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
   async function addInventoryItem(e: React.FormEvent) {
     e.preventDefault();
-    if (!inventoryOpen) return;
+    if (!inventoryOpen || itemSaving) return;
     const roomId = inventoryOpen;
+    setItemSaving(true);
     try {
       const res = await fetch(`/api/rooms/${roomId}/inventory`, {
         method: "POST",
@@ -163,12 +189,13 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       if (!res.ok) throw new Error(item.error || "Failed to add item");
 
       setInventoryOpen(null);
-      setItemForm({ name: "", description: "", condition: "Good", photoUrls: [] });
-
-      await reloadSWR(mutate, propertyUrl);
+      setItemForm(emptyItemForm);
+      await appendItemToRoom(roomId, item);
       toast.success("Item added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add item");
+    } finally {
+      setItemSaving(false);
     }
   }
 
@@ -263,7 +290,10 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                   </Button>
                   <Dialog
                     open={inventoryOpen === room.id}
-                    onOpenChange={(o) => setInventoryOpen(o ? room.id : null)}
+                    onOpenChange={(o) => {
+                      setInventoryOpen(o ? room.id : null);
+                      if (!o) setItemForm(emptyItemForm);
+                    }}
                   >
                     <DialogTrigger render={<Button size="sm" variant="outline"><Plus className="mr-1 h-3 w-3" />Item</Button>} />
                     <DialogContent>
@@ -294,15 +324,49 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                         <FileUpload
                           label="Add photo"
                           onUpload={(url) =>
-                            setItemForm({ ...itemForm, photoUrls: [...itemForm.photoUrls, url] })
+                            setItemForm((prev) => ({
+                              ...prev,
+                              photoUrls: [...prev.photoUrls, url],
+                            }))
                           }
                         />
                         {itemForm.photoUrls.length > 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            {itemForm.photoUrls.length} photo(s) attached
-                          </p>
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              {itemForm.photoUrls.length} photo(s) attached
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {itemForm.photoUrls.map((url, index) => (
+                                <div key={`${url}-${index}`} className="relative h-16 w-16 overflow-hidden rounded border">
+                                  <Image src={url} alt="" fill className="object-cover" unoptimized={url.startsWith("data:")} />
+                                  <button
+                                    type="button"
+                                    className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5"
+                                    onClick={() =>
+                                      setItemForm((prev) => ({
+                                        ...prev,
+                                        photoUrls: prev.photoUrls.filter((_, i) => i !== index),
+                                      }))
+                                    }
+                                    aria-label="Remove photo"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
-                        <Button type="submit" className="w-full">Add Item</Button>
+                        <Button type="submit" className="w-full" disabled={itemSaving}>
+                          {itemSaving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            "Add Item"
+                          )}
+                        </Button>
                       </form>
                     </DialogContent>
                   </Dialog>

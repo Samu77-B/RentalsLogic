@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,12 +40,22 @@ export function FileUpload({
       formData.append("file", file);
 
       const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Upload failed. Configure Vercel Blob or save without a photo."
+        );
+      }
       onUpload(data.url);
     } catch (error) {
       console.error(error);
-      alert("Upload failed. Configure BLOB_READ_WRITE_TOKEN or try again when online.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Upload failed. You can still save the item without a photo."
+      );
     } finally {
       setLoading(false);
     }

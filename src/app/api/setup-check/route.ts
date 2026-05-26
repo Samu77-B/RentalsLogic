@@ -33,6 +33,7 @@ export async function GET() {
     hasPgbouncer,
     databaseConnected,
     databaseError,
+    blobStorage: Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim()),
     appUrl: process.env.NEXT_PUBLIC_APP_URL ?? null,
   });
 }
