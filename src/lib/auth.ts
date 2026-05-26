@@ -9,24 +9,29 @@ export async function getCurrentDbUser() {
   const clerkUser = await currentUser();
   if (!clerkUser) return null;
 
-  let user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  try {
+    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
 
-  if (!user) {
-    const role =
-      (clerkUser.publicMetadata?.role as UserRole) ||
-      UserRole.LANDLORD;
+    if (!user) {
+      const role =
+        (clerkUser.publicMetadata?.role as UserRole) ||
+        UserRole.LANDLORD;
 
-    user = await prisma.user.create({
-      data: {
-        clerkId: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
-        fullName: clerkUser.fullName ?? clerkUser.firstName ?? null,
-        role,
-      },
-    });
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+          fullName: clerkUser.fullName ?? clerkUser.firstName ?? null,
+          role,
+        },
+      });
+    }
+
+    return user;
+  } catch (error) {
+    console.error("getCurrentDbUser failed:", error);
+    throw error;
   }
-
-  return user;
 }
 
 export async function requireAuth() {

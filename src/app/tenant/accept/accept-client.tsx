@@ -59,10 +59,10 @@ export default function AcceptInvitePage() {
                 Use a different email if you already have a landlord account.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <SignInButton mode="modal" forceRedirectUrl={returnUrl}>
+                <SignInButton mode="redirect" forceRedirectUrl={returnUrl}>
                   <Button className="w-full">Sign in</Button>
                 </SignInButton>
-                <SignUpButton mode="modal" forceRedirectUrl={returnUrl}>
+                <SignUpButton mode="redirect" forceRedirectUrl={returnUrl}>
                   <Button variant="outline" className="w-full">
                     Create account
                   </Button>

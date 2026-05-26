@@ -1,5 +1,5 @@
 import { getCurrentDbUser } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/api";
+import { jsonError, jsonOk, formatApiError } from "@/lib/api";
 import { getHomeRouteForRole } from "@/lib/home-route";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET() {
       homeRoute: getHomeRouteForRole(user.role),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch profile";
-    return jsonError(message, 500);
+    const { message, status } = formatApiError(error, "Failed to fetch profile");
+    return jsonError(message, status);
   }
 }

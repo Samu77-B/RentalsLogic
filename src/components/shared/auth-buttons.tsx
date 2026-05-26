@@ -32,10 +32,10 @@ export function AuthButtons() {
 
   return (
     <>
-      <SignInButton mode="modal" forceRedirectUrl="/auth/redirect">
+      <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
         <Button variant="ghost">Sign in</Button>
       </SignInButton>
-      <SignUpButton mode="modal" forceRedirectUrl="/auth/redirect">
+      <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
         <Button>Get started</Button>
       </SignUpButton>
     </>
@@ -61,7 +61,7 @@ export function HeroCta() {
   }
 
   return (
-    <SignUpButton mode="modal" forceRedirectUrl="/auth/redirect">
+    <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
       <Button size="lg">Start free trial</Button>
     </SignUpButton>
   );
