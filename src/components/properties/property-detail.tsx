@@ -34,12 +34,41 @@ const fetcher = async (url: string) => {
   return data;
 };
 
+interface InventoryPhoto {
+  url: string;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  condition?: string;
+  description?: string;
+  photos: InventoryPhoto[];
+}
+
+interface Room {
+  id: string;
+  name: string;
+  roomType: string;
+  inventoryItems: InventoryItem[];
+  roomPhotos?: unknown[];
+}
+
+interface Property {
+  id: string;
+  address: string;
+  rentAmount: string | number;
+  rentPeriod?: string;
+  propertyType: string;
+  rooms?: Room[];
+}
+
 interface PropertyDetailProps {
   propertyId: string;
 }
 
 export function PropertyDetail({ propertyId }: PropertyDetailProps) {
-  const { data: property, mutate, isLoading } = useSWR(
+  const { data: property, mutate, isLoading } = useSWR<Property>(
     `/api/properties/${propertyId}`,
     fetcher
   );
@@ -113,8 +142,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           current
             ? {
                 ...current,
-                rooms: (current.rooms ?? []).map(
-                  (r: { id: string; inventoryItems?: unknown[]; roomPhotos?: unknown[] }) =>
+                rooms: (current.rooms ?? []).map((r) =>
                     r.id === roomId
                       ? { ...r, name: room.name, roomType: room.roomType }
                       : r
@@ -149,9 +177,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           current
             ? {
                 ...current,
-                rooms: (current.rooms ?? []).filter(
-                  (room: { id: string }) => room.id !== roomId
-                ),
+                rooms: (current.rooms ?? []).filter((room) => room.id !== roomId),
               }
             : current,
         { revalidate: true }
@@ -183,7 +209,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           current
             ? {
                 ...current,
-                rooms: (current.rooms ?? []).map((room: { id: string; inventoryItems?: unknown[] }) =>
+                rooms: (current.rooms ?? []).map((room) =>
                   room.id === roomId
                     ? { ...room, inventoryItems: [...(room.inventoryItems ?? []), item] }
                     : room
@@ -212,14 +238,12 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           current
             ? {
                 ...current,
-                rooms: (current.rooms ?? []).map(
-                  (room: { inventoryItems?: Array<{ id: string }> }) => ({
+                rooms: (current.rooms ?? []).map((room) => ({
                     ...room,
                     inventoryItems: (room.inventoryItems ?? []).filter(
                       (item) => item.id !== itemId
                     ),
-                  })
-                ),
+                  })),
               }
             : current,
         { revalidate: true }
@@ -278,18 +302,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           </Dialog>
         </div>
 
-        {property.rooms?.map((room: {
-          id: string;
-          name: string;
-          roomType: string;
-          inventoryItems: Array<{
-            id: string;
-            name: string;
-            condition?: string;
-            description?: string;
-            photos: Array<{ url: string }>;
-          }>;
-        }) => (
+        {property.rooms?.map((room) => (
           <Card key={room.id}>
             <CardContent className="pt-6">
               <div className="mb-4 flex items-center justify-between gap-2">
