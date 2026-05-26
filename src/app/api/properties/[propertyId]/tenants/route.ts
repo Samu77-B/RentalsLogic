@@ -6,6 +6,8 @@ import { sendTenantInvite } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { TenancyStatus } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ propertyId: string }> };
 
 export async function GET(_request: Request, { params }: Params) {

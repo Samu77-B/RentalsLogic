@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,14 +24,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileUpload } from "@/components/shared/file-upload";
+import { swrFetcher, reloadSWR } from "@/lib/swr";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+interface MeterReading {
+  id: string;
+  readingType: string;
+  readingValue: string;
+  readingDate: string;
+}
+
+interface Tenancy {
+  id: string;
+  tenantName: string;
+  tenantEmail: string;
+  status: string;
+  inviteToken?: string | null;
+  leaseStartDate: string;
+  leaseEndDate: string;
+}
+
+interface Document {
+  id: string;
+  title: string;
+  isSigned: boolean;
+  storagePath: string;
+}
 
 export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
-  const { data: readings, mutate } = useSWR(
-    `/api/properties/${propertyId}/meter-readings`,
-    fetcher
-  );
+  const readingsUrl = `/api/properties/${propertyId}/meter-readings`;
+  const { data: readings, mutate } = useSWR<MeterReading[]>(readingsUrl, swrFetcher);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     readingType: "ELECTRIC",
@@ -41,13 +63,27 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/properties/${propertyId}/meter-readings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, readingValue: parseFloat(form.readingValue) }),
-    });
-    setOpen(false);
-    mutate();
+    try {
+      const res = await fetch(readingsUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, readingValue: parseFloat(form.readingValue) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save reading");
+
+      setOpen(false);
+      setForm({
+        readingType: "ELECTRIC",
+        readingValue: "",
+        readingDate: new Date().toISOString().split("T")[0],
+        photoUrl: "",
+      });
+      await reloadSWR(mutate, readingsUrl);
+      toast.success("Reading saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save reading");
+    }
   }
 
   return (
@@ -103,12 +139,7 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
       </div>
 
       <div className="grid gap-3">
-        {readings?.map((r: {
-          id: string;
-          readingType: string;
-          readingValue: string;
-          readingDate: string;
-        }) => (
+        {readings?.map((r) => (
           <Card key={r.id}>
             <CardContent className="flex items-center justify-between py-4">
               <div>
@@ -127,10 +158,8 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
 }
 
 export function TenantsPanel({ propertyId }: { propertyId: string }) {
-  const { data: tenants, mutate } = useSWR(
-    `/api/properties/${propertyId}/tenants`,
-    fetcher
-  );
+  const tenantsUrl = `/api/properties/${propertyId}/tenants`;
+  const { data: tenants, mutate } = useSWR<Tenancy[]>(tenantsUrl, swrFetcher);
   const [open, setOpen] = useState(false);
   const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -143,17 +172,31 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch(`/api/properties/${propertyId}/tenants`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (res.ok && data.inviteUrl) {
-      setLastInviteUrl(data.inviteUrl);
+    try {
+      const res = await fetch(tenantsUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to invite tenant");
+
+      if (data.inviteUrl) {
+        setLastInviteUrl(data.inviteUrl);
+      }
+      setOpen(false);
+      setForm({
+        tenantName: "",
+        tenantEmail: "",
+        tenantPhone: "",
+        leaseStartDate: "",
+        leaseEndDate: "",
+      });
+      await reloadSWR(mutate, tenantsUrl);
+      toast.success("Tenant invited");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to invite tenant");
     }
-    setOpen(false);
-    mutate();
   }
 
   function inviteLink(token?: string | null) {
@@ -208,15 +251,7 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
         </Card>
       )}
 
-      {tenants?.map((t: {
-        id: string;
-        tenantName: string;
-        tenantEmail: string;
-        status: string;
-        inviteToken?: string | null;
-        leaseStartDate: string;
-        leaseEndDate: string;
-      }) => (
+      {tenants?.map((t) => (
         <Card key={t.id}>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -242,22 +277,29 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
 }
 
 export function DocumentsPanel({ propertyId }: { propertyId: string }) {
-  const { data: documents, mutate } = useSWR(
-    `/api/properties/${propertyId}/documents`,
-    fetcher
-  );
+  const documentsUrl = `/api/properties/${propertyId}/documents`;
+  const { data: documents, mutate } = useSWR<Document[]>(documentsUrl, swrFetcher);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", documentType: "OTHER", storagePath: "" });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/properties/${propertyId}/documents`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setOpen(false);
-    mutate();
+    try {
+      const res = await fetch(documentsUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save document");
+
+      setOpen(false);
+      setForm({ title: "", documentType: "OTHER", storagePath: "" });
+      await reloadSWR(mutate, documentsUrl);
+      toast.success("Document saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save document");
+    }
   }
 
   return (
@@ -284,7 +326,7 @@ export function DocumentsPanel({ propertyId }: { propertyId: string }) {
         </Dialog>
       </div>
 
-      {documents?.map((d: { id: string; title: string; isSigned: boolean; storagePath: string }) => (
+      {documents?.map((d) => (
         <Card key={d.id}>
           <CardContent className="flex items-center justify-between py-4">
             <div>

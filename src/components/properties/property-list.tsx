@@ -24,11 +24,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { swrFetcher, reloadSWR } from "@/lib/swr";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+interface PropertySummary {
+  id: string;
+  address: string;
+  city?: string;
+  postcode?: string;
+  propertyType: string;
+  rentAmount: string | number;
+  rentPeriod?: string;
+  _count?: { rooms: number; tenancies: number };
+}
 
 export function PropertyList() {
-  const { data: properties, mutate, isLoading } = useSWR("/api/properties", fetcher);
+  const propertiesUrl = "/api/properties";
+  const { data: properties, mutate, isLoading } = useSWR<PropertySummary[]>(
+    propertiesUrl,
+    swrFetcher
+  );
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +79,6 @@ export function PropertyList() {
         throw new Error(data.error || "Failed to create property");
       }
 
-      toast.success("Property created");
       setOpen(false);
       setForm({
         address: "",
@@ -75,7 +88,8 @@ export function PropertyList() {
         rentAmount: "",
         rentPeriod: "MONTHLY",
       });
-      mutate();
+      await reloadSWR(mutate, propertiesUrl);
+      toast.success("Property created");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create property";
       setError(message);
@@ -180,15 +194,7 @@ export function PropertyList() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {properties.map((property: {
-            id: string;
-            address: string;
-            city?: string;
-            propertyType: string;
-            rentAmount: string;
-            rentPeriod: string;
-            _count?: { rooms: number; tenancies: number };
-          }) => (
+          {properties.map((property) => (
             <Link key={property.id} href={`/dashboard/properties/${property.id}`}>
               <Card className="transition-shadow hover:shadow-md">
                 <CardHeader>
@@ -202,7 +208,7 @@ export function PropertyList() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-semibold">
-                    £{property.rentAmount}/{property.rentPeriod.toLowerCase()}
+                    £{property.rentAmount}/{property.rentPeriod?.toLowerCase()}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {property._count?.rooms ?? 0} rooms · {property._count?.tenancies ?? 0} tenants

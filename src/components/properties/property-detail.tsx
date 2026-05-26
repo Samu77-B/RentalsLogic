@@ -26,13 +26,7 @@ import {
 } from "@/components/ui/select";
 import { FileUpload } from "@/components/shared/file-upload";
 import { CONDITION_OPTIONS, ROOM_TYPE_LABELS } from "@/lib/checklists";
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { cache: "no-store" });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Request failed");
-  return data;
-};
+import { swrFetcher, reloadSWR } from "@/lib/swr";
 
 interface InventoryPhoto {
   url: string;
@@ -68,9 +62,10 @@ interface PropertyDetailProps {
 }
 
 export function PropertyDetail({ propertyId }: PropertyDetailProps) {
+  const propertyUrl = `/api/properties/${propertyId}`;
   const { data: property, mutate, isLoading } = useSWR<Property>(
-    `/api/properties/${propertyId}`,
-    fetcher
+    propertyUrl,
+    swrFetcher
   );
   const [roomOpen, setRoomOpen] = useState(false);
   const [editRoomId, setEditRoomId] = useState<string | null>(null);
@@ -98,19 +93,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       setRoomOpen(false);
       setRoomForm({ name: "", roomType: "BEDROOM" });
 
-      await mutate(
-        (current) =>
-          current
-            ? {
-                ...current,
-                rooms: [
-                  ...(current.rooms ?? []),
-                  { ...room, inventoryItems: [], roomPhotos: [] },
-                ],
-              }
-            : current,
-        { revalidate: true }
-      );
+      await reloadSWR(mutate, propertyUrl);
       toast.success("Room added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add room");
@@ -137,20 +120,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
       setEditRoomId(null);
 
-      await mutate(
-        (current) =>
-          current
-            ? {
-                ...current,
-                rooms: (current.rooms ?? []).map((r) =>
-                    r.id === roomId
-                      ? { ...r, name: room.name, roomType: room.roomType }
-                      : r
-                ),
-              }
-            : current,
-        { revalidate: true }
-      );
+      await reloadSWR(mutate, propertyUrl);
       toast.success("Room updated");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update room");
@@ -172,16 +142,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         throw new Error(data.error || "Failed to delete room");
       }
 
-      await mutate(
-        (current) =>
-          current
-            ? {
-                ...current,
-                rooms: (current.rooms ?? []).filter((room) => room.id !== roomId),
-              }
-            : current,
-        { revalidate: true }
-      );
+      await reloadSWR(mutate, propertyUrl);
       toast.success("Room deleted");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete room");
@@ -204,20 +165,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       setInventoryOpen(null);
       setItemForm({ name: "", description: "", condition: "Good", photoUrls: [] });
 
-      await mutate(
-        (current) =>
-          current
-            ? {
-                ...current,
-                rooms: (current.rooms ?? []).map((room) =>
-                  room.id === roomId
-                    ? { ...room, inventoryItems: [...(room.inventoryItems ?? []), item] }
-                    : room
-                ),
-              }
-            : current,
-        { revalidate: true }
-      );
+      await reloadSWR(mutate, propertyUrl);
       toast.success("Item added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add item");
@@ -233,21 +181,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         throw new Error(data.error || "Failed to delete item");
       }
 
-      await mutate(
-        (current) =>
-          current
-            ? {
-                ...current,
-                rooms: (current.rooms ?? []).map((room) => ({
-                    ...room,
-                    inventoryItems: (room.inventoryItems ?? []).filter(
-                      (item) => item.id !== itemId
-                    ),
-                  })),
-              }
-            : current,
-        { revalidate: true }
-      );
+      await reloadSWR(mutate, propertyUrl);
       toast.success("Item deleted");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete item");

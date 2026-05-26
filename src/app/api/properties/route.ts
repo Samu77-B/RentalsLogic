@@ -6,6 +6,8 @@ import { getLandlordProperties } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { PropertyType, RentPeriod } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const user = await requireLandlord();
