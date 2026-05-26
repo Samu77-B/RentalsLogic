@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
-import { Plus, Package, Trash2 } from "lucide-react";
+import { Plus, Package, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,8 +44,10 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     fetcher
   );
   const [roomOpen, setRoomOpen] = useState(false);
+  const [editRoomId, setEditRoomId] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState<string | null>(null);
   const [roomForm, setRoomForm] = useState({ name: "", roomType: "BEDROOM" });
+  const [editRoomForm, setEditRoomForm] = useState({ name: "", roomType: "BEDROOM" });
   const [itemForm, setItemForm] = useState({
     name: "",
     description: "",
@@ -83,6 +85,80 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       toast.success("Room added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add room");
+    }
+  }
+
+  function openEditRoom(room: { id: string; name: string; roomType: string }) {
+    setEditRoomForm({ name: room.name, roomType: room.roomType });
+    setEditRoomId(room.id);
+  }
+
+  async function updateRoom(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editRoomId) return;
+    const roomId = editRoomId;
+    try {
+      const res = await fetch(`/api/rooms/${roomId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editRoomForm),
+      });
+      const room = await res.json();
+      if (!res.ok) throw new Error(room.error || "Failed to update room");
+
+      setEditRoomId(null);
+
+      await mutate(
+        (current) =>
+          current
+            ? {
+                ...current,
+                rooms: (current.rooms ?? []).map(
+                  (r: { id: string; inventoryItems?: unknown[]; roomPhotos?: unknown[] }) =>
+                    r.id === roomId
+                      ? { ...r, name: room.name, roomType: room.roomType }
+                      : r
+                ),
+              }
+            : current,
+        { revalidate: true }
+      );
+      toast.success("Room updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update room");
+    }
+  }
+
+  async function deleteRoom(roomId: string, roomName: string) {
+    if (
+      !confirm(
+        `Delete "${roomName}"? All inventory items in this room will also be removed.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/rooms/${roomId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete room");
+      }
+
+      await mutate(
+        (current) =>
+          current
+            ? {
+                ...current,
+                rooms: (current.rooms ?? []).filter(
+                  (room: { id: string }) => room.id !== roomId
+                ),
+              }
+            : current,
+        { revalidate: true }
+      );
+      toast.success("Room deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete room");
     }
   }
 
@@ -216,56 +292,74 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         }) => (
           <Card key={room.id}>
             <CardContent className="pt-6">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between gap-2">
                 <div>
                   <h3 className="font-semibold">{room.name}</h3>
                   <Badge variant="outline">{ROOM_TYPE_LABELS[room.roomType] ?? room.roomType}</Badge>
                 </div>
-                <Dialog
-                  open={inventoryOpen === room.id}
-                  onOpenChange={(o) => setInventoryOpen(o ? room.id : null)}
-                >
-                  <DialogTrigger render={<Button size="sm" variant="outline"><Plus className="mr-1 h-3 w-3" />Item</Button>} />
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Add Inventory Item</DialogTitle></DialogHeader>
-                    <form onSubmit={addInventoryItem} className="space-y-4">
-                      <div>
-                        <Label>Name</Label>
-                        <Input
-                          required
-                          value={itemForm.name}
-                          onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openEditRoom(room)}
+                    aria-label={`Edit ${room.name}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deleteRoom(room.id, room.name)}
+                    aria-label={`Delete ${room.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Dialog
+                    open={inventoryOpen === room.id}
+                    onOpenChange={(o) => setInventoryOpen(o ? room.id : null)}
+                  >
+                    <DialogTrigger render={<Button size="sm" variant="outline"><Plus className="mr-1 h-3 w-3" />Item</Button>} />
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>Add Inventory Item</DialogTitle></DialogHeader>
+                      <form onSubmit={addInventoryItem} className="space-y-4">
+                        <div>
+                          <Label>Name</Label>
+                          <Input
+                            required
+                            value={itemForm.name}
+                            onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label>Condition</Label>
+                          <Select
+                            value={itemForm.condition}
+                            onValueChange={(v) => setItemForm({ ...itemForm, condition: v ?? "Good" })}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {CONDITION_OPTIONS.map((c) => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <FileUpload
+                          label="Add photo"
+                          onUpload={(url) =>
+                            setItemForm({ ...itemForm, photoUrls: [...itemForm.photoUrls, url] })
+                          }
                         />
-                      </div>
-                      <div>
-                        <Label>Condition</Label>
-                        <Select
-                          value={itemForm.condition}
-                          onValueChange={(v) => setItemForm({ ...itemForm, condition: v ?? "Good" })}
-                        >
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {CONDITION_OPTIONS.map((c) => (
-                              <SelectItem key={c} value={c}>{c}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <FileUpload
-                        label="Add photo"
-                        onUpload={(url) =>
-                          setItemForm({ ...itemForm, photoUrls: [...itemForm.photoUrls, url] })
-                        }
-                      />
-                      {itemForm.photoUrls.length > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          {itemForm.photoUrls.length} photo(s) attached
-                        </p>
-                      )}
-                      <Button type="submit" className="w-full">Add Item</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                        {itemForm.photoUrls.length > 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            {itemForm.photoUrls.length} photo(s) attached
+                          </p>
+                        )}
+                        <Button type="submit" className="w-full">Add Item</Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
 
               {!room.inventoryItems?.length ? (
@@ -305,6 +399,37 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
           </Card>
         ))}
       </section>
+
+      <Dialog open={editRoomId !== null} onOpenChange={(open) => { if (!open) setEditRoomId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Room</DialogTitle></DialogHeader>
+          <form onSubmit={updateRoom} className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                required
+                value={editRoomForm.name}
+                onChange={(e) => setEditRoomForm({ ...editRoomForm, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <Select
+                value={editRoomForm.roomType}
+                onValueChange={(v) => setEditRoomForm({ ...editRoomForm, roomType: v ?? "BEDROOM" })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROOM_TYPE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full">Save Changes</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

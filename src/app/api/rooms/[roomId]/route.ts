@@ -1,6 +1,7 @@
 import { requireLandlord } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
+import { RoomType } from "@prisma/client";
 
 type Params = { params: Promise<{ roomId: string }> };
 
@@ -17,7 +18,11 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const updated = await prisma.room.update({
       where: { id: roomId },
-      data: { name: body.name, roomType: body.roomType, sortOrder: body.sortOrder },
+      data: {
+        name: body.name,
+        roomType: body.roomType as RoomType | undefined,
+        sortOrder: body.sortOrder,
+      },
     });
 
     return jsonOk(updated);
