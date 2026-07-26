@@ -33,6 +33,26 @@ const features = [
   },
 ];
 
+const plans = [
+  {
+    name: "Basic",
+    price: "9.99",
+    properties: "3 properties",
+  },
+  {
+    name: "Premium",
+    price: "24.99",
+    properties: "25 properties",
+  },
+  {
+    name: "Enterprise",
+    price: "49.99",
+    properties: "Unlimited properties",
+  },
+] as const;
+
+const planPerks = ["Full inspection reports", "Tenant portal"] as const;
+
 type MeResponse = { homeRoute: string; role: string };
 
 const outlineBtn =
@@ -245,6 +265,59 @@ export function HomeLanding() {
                 e-signatures without chasing paperwork.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#2c2c2e] py-24 text-white md:py-32">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="text-sm font-medium tracking-wide text-white/50 uppercase">
+            Plans
+          </p>
+          <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+            Choose the plan that fits your portfolio.
+          </h2>
+          <p className="mt-4 max-w-xl text-lg text-white/60">
+            Simple monthly pricing. Upgrade whenever you grow.
+          </p>
+
+          <div className="mt-14 grid gap-5 md:grid-cols-3">
+            {plans.map((plan) => (
+              <div
+                key={plan.name}
+                className="flex flex-col rounded-2xl bg-white p-6 text-neutral-950 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.55)] ring-1 ring-black/5"
+              >
+                <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
+                <p className="mt-2 text-3xl font-semibold tracking-tight">
+                  £{plan.price}
+                  <span className="text-sm font-normal text-neutral-500">/mo</span>
+                </p>
+                <ul className="mt-6 flex-1 space-y-3 text-sm text-neutral-600">
+                  <li className="flex items-center gap-2">
+                    <span className="inline-flex size-4 items-center justify-center text-neutral-950" aria-hidden>
+                      ✓
+                    </span>
+                    {plan.properties}
+                  </li>
+                  {planPerks.map((perk) => (
+                    <li key={perk} className="flex items-center gap-2">
+                      <span className="inline-flex size-4 items-center justify-center text-neutral-950" aria-hidden>
+                        ✓
+                      </span>
+                      {perk}
+                    </li>
+                  ))}
+                </ul>
+                <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
+                  <button
+                    type="button"
+                    className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-neutral-900 text-sm font-medium text-white transition hover:bg-neutral-800"
+                  >
+                    Get started
+                  </button>
+                </SignUpButton>
+              </div>
+            ))}
           </div>
         </div>
       </section>
