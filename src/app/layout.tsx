@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRegister } from "@/components/shared/pwa-register";
@@ -8,8 +8,8 @@ import { OfflineSync } from "@/components/shared/offline-sync";
 import { SetupRequired, isClerkConfigured } from "@/components/shared/setup-required";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -39,7 +39,7 @@ export default function RootLayout({
     return (
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col font-sans">
           <SetupRequired />
@@ -55,7 +55,7 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col font-sans">
           <TooltipProvider>
