@@ -6,6 +6,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FileUpload } from "@/components/shared/file-upload";
+import { Button } from "@/components/ui/button";
 import { swrFetcher, reloadSWR } from "@/lib/swr";
 
 type PropertyHeaderData = {
@@ -19,8 +20,8 @@ type PropertyHeaderData = {
 };
 
 export function PropertyHeader({ propertyId }: { propertyId: string }) {
-  const propertyUrl = `/api/properties/${propertyId}`;
-  const { data: property, mutate, isLoading } = useSWR<PropertyHeaderData>(
+  const propertyUrl = `/api/properties/${propertyId}?view=summary`;
+  const { data: property, mutate, isLoading, error, isValidating } = useSWR<PropertyHeaderData>(
     propertyUrl,
     swrFetcher
   );
@@ -45,7 +46,7 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
     }
   }
 
-  if (isLoading || !property) {
+  if (isLoading && !property) {
     return (
       <div className="mb-6 animate-pulse space-y-3">
         <div className="h-8 w-64 rounded-full bg-white/10" />
@@ -53,6 +54,29 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
       </div>
     );
   }
+
+  if (error && !property) {
+    return (
+      <div className="mb-6 rounded-3xl bg-white/8 p-6 text-white ring-1 ring-white/10">
+        <p className="font-heading text-lg font-semibold tracking-tight">
+          Couldn’t load this property
+        </p>
+        <p className="mt-2 text-sm text-white/60">
+          {error instanceof Error ? error.message : "Please try again."}
+        </p>
+        <Button
+          type="button"
+          className="mt-4 rounded-full bg-white text-neutral-950 hover:bg-white/90"
+          onClick={() => mutate()}
+          disabled={isValidating}
+        >
+          {isValidating ? "Retrying..." : "Retry"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!property) return null;
 
   return (
     <div className="mb-6 space-y-4">

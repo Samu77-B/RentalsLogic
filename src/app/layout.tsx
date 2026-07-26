@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRegister } from "@/components/shared/pwa-register";
 import { OfflineSync } from "@/components/shared/offline-sync";
+import { SwrProvider } from "@/components/shared/swr-provider";
 import { SetupRequired, isClerkConfigured } from "@/components/shared/setup-required";
 import "./globals.css";
 
@@ -60,10 +61,12 @@ export default function RootLayout({
       <html lang="en" className={htmlFontClass}>
         <body className="min-h-full flex flex-col font-sans">
           <TooltipProvider>
-            {children}
-            <Toaster />
-            <PwaRegister />
-            <OfflineSync />
+            <SwrProvider>
+              {children}
+              <Toaster />
+              <PwaRegister />
+              <OfflineSync />
+            </SwrProvider>
           </TooltipProvider>
         </body>
       </html>

@@ -46,10 +46,13 @@ interface PropertySummary {
 
 export function PropertyList() {
   const propertiesUrl = "/api/properties";
-  const { data: properties, mutate, isLoading } = useSWR<PropertySummary[]>(
-    propertiesUrl,
-    swrFetcher
-  );
+  const {
+    data: properties,
+    mutate,
+    isLoading,
+    error: loadError,
+    isValidating,
+  } = useSWR<PropertySummary[]>(propertiesUrl, swrFetcher);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +115,25 @@ export function PropertyList() {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground">Loading properties...</p>;
+  if (isLoading && !properties) {
+    return <p className="text-muted-foreground">Loading properties...</p>;
+  }
+
+  if (loadError && !properties) {
+    return (
+      <div className="space-y-4 rounded-3xl bg-white p-6 text-neutral-950 ring-1 ring-black/5">
+        <p className="font-heading text-lg font-semibold tracking-tight">
+          Couldn’t load properties
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {loadError instanceof Error ? loadError.message : "Please try again."}
+        </p>
+        <Button type="button" className="rounded-full" onClick={() => mutate()} disabled={isValidating}>
+          {isValidating ? "Retrying..." : "Retry"}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

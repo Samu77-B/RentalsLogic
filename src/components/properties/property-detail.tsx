@@ -70,7 +70,7 @@ interface PropertyDetailProps {
 
 export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   const propertyUrl = `/api/properties/${propertyId}`;
-  const { data: property, mutate, isLoading } = useSWR<Property>(
+  const { data: property, mutate, isLoading, error, isValidating } = useSWR<Property>(
     propertyUrl,
     swrFetcher
   );
@@ -254,8 +254,34 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     }
   }
 
-  if (isLoading) return <p>Loading...</p>;
-  if (!property) return <p>Property not found</p>;
+  if (isLoading && !property) {
+    return <p className="text-white/60">Loading rooms...</p>;
+  }
+
+  if (error && !property) {
+    return (
+      <div className="rounded-3xl bg-white p-6 text-neutral-950 ring-1 ring-black/5">
+        <p className="font-heading text-lg font-semibold tracking-tight">
+          Couldn’t load rooms
+        </p>
+        <p className="mt-2 text-sm text-neutral-500">
+          {error instanceof Error ? error.message : "Please try again."}
+        </p>
+        <Button
+          type="button"
+          className="mt-4 rounded-full"
+          onClick={() => mutate()}
+          disabled={isValidating}
+        >
+          {isValidating ? "Retrying..." : "Retry"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return <p className="text-white/60">Property not found</p>;
+  }
 
   return (
     <div className="space-y-8">

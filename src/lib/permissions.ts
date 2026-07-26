@@ -46,20 +46,58 @@ export async function getTenantProperties(userId: string) {
 }
 
 export async function getLandlordProperties(userId: string) {
-  return prisma.property.findMany({
-    where: { ownerId: userId },
-    include: {
-      _count: {
-        select: {
-          rooms: true,
-          tenancies: true,
-          maintenanceRequests: {
-            where: { status: { in: ["OPEN", "IN_PROGRESS"] } },
+  try {
+    return await prisma.property.findMany({
+      where: { ownerId: userId },
+      include: {
+        _count: {
+          select: {
+            rooms: true,
+            tenancies: true,
+            maintenanceRequests: {
+              where: { status: { in: ["OPEN", "IN_PROGRESS"] } },
+            },
+            certificates: true,
           },
-          certificates: true,
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("coverPhotoUrl")) throw error;
+
+    const properties = await prisma.property.findMany({
+      where: { ownerId: userId },
+      select: {
+        id: true,
+        ownerId: true,
+        propertyType: true,
+        address: true,
+        city: true,
+        postcode: true,
+        rentAmount: true,
+        rentPeriod: true,
+        region: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            rooms: true,
+            tenancies: true,
+            maintenanceRequests: {
+              where: { status: { in: ["OPEN", "IN_PROGRESS"] } },
+            },
+            certificates: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return properties.map((property) => ({
+      ...property,
+      coverPhotoUrl: null as string | null,
+    }));
+  }
 }
