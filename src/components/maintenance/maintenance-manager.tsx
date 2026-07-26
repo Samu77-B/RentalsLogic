@@ -27,9 +27,19 @@ import { FileUpload } from "@/components/shared/file-upload";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export function MaintenanceManager({ tenantMode = false }: { tenantMode?: boolean }) {
-  const { data: properties } = useSWR(tenantMode ? "/api/tenant/dashboard" : "/api/properties", fetcher);
-  const [propertyId, setPropertyId] = useState("");
+export function MaintenanceManager({
+  tenantMode = false,
+  propertyId: lockedPropertyId,
+}: {
+  tenantMode?: boolean;
+  propertyId?: string;
+}) {
+  const { data: properties } = useSWR(
+    lockedPropertyId || tenantMode ? (tenantMode ? "/api/tenant/dashboard" : null) : "/api/properties",
+    fetcher
+  );
+  const [selectedPropertyId, setSelectedPropertyId] = useState(lockedPropertyId ?? "");
+  const propertyId = lockedPropertyId || selectedPropertyId;
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -74,14 +84,16 @@ export function MaintenanceManager({ tenantMode = false }: { tenantMode?: boolea
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Maintenance</h2>
         <div className="flex items-center gap-3">
-          <Select value={propertyId} onValueChange={(v) => setPropertyId(v ?? "")}>
-            <SelectTrigger className="w-64"><SelectValue placeholder="Select property" /></SelectTrigger>
-            <SelectContent>
-              {propertyList?.map((p: { id: string; address: string }) => (
-                <SelectItem key={p.id} value={p.id}>{p.address}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {!lockedPropertyId && (
+            <Select value={selectedPropertyId} onValueChange={(v) => setSelectedPropertyId(v ?? "")}>
+              <SelectTrigger className="w-64"><SelectValue placeholder="Select property" /></SelectTrigger>
+              <SelectContent>
+                {propertyList?.map((p: { id: string; address: string }) => (
+                  <SelectItem key={p.id} value={p.id}>{p.address}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger render={<Button disabled={!propertyId}><Plus className="mr-2 h-4 w-4" />New Request</Button>} />
             <DialogContent>
