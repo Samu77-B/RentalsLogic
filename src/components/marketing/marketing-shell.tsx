@@ -21,7 +21,7 @@ export function MarketingHeader({
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
         light
-          ? "border-b border-black/5 bg-[#f5f5f7]/95 backdrop-blur-xl"
+          ? "border-b border-black/5 bg-white/55 backdrop-blur-xl supports-backdrop-filter:bg-white/45"
           : "border-b border-transparent bg-transparent"
       }`}
     >
