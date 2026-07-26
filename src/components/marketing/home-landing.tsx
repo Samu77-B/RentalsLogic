@@ -68,16 +68,14 @@ function HeroVideo() {
     <video
       ref={videoRef}
       className="absolute inset-0 h-full w-full object-cover"
+      src="/images/hero/hero.mp4"
       autoPlay
       muted
       loop
       playsInline
       preload="auto"
-      poster={marketing.productInventory}
       aria-hidden
-    >
-      <source src={marketing.heroVideo} type="video/mp4" />
-    </video>
+    />
   );
 }
 
