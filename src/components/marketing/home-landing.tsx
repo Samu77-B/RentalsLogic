@@ -236,7 +236,7 @@ export function HomeLanding() {
             </div>
             <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_20px_60px_-30px_rgba(0,0,0,0.35)] ring-1 ring-black/5">
               <Image
-                src={marketing.productInventory}
+                src={marketing.productInspections}
                 alt="Property inventory preview"
                 width={960}
                 height={720}
@@ -248,7 +248,7 @@ export function HomeLanding() {
           <div className="mt-24 grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 overflow-hidden rounded-[2rem] bg-white shadow-[0_20px_60px_-30px_rgba(0,0,0,0.35)] ring-1 ring-black/5 lg:order-1">
               <Image
-                src={marketing.productInspections}
+                src={marketing.productInventory}
                 alt="Inspection workflow preview"
                 width={960}
                 height={720}
