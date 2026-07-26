@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { routes } from "@/config/routes";
+import { brand } from "@/lib/brand-assets";
 
 const navItems = [
   { href: routes.tenant.root, label: "Home", icon: Home },
@@ -20,37 +22,66 @@ const navItems = [
   { href: routes.tenant.meters, label: "Meters", icon: Gauge },
 ];
 
-export function TenantNav() {
+export function TenantNav({
+  onNavigate,
+  className,
+}: {
+  onNavigate?: () => void;
+  className?: string;
+}) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1 p-4">
+    <nav className={cn("flex h-full flex-col gap-1 p-4", className)}>
       <div className="mb-6 px-2">
-        <Link href="/" className="text-lg font-bold text-primary">
-          RentalsLogic
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="flex items-center gap-3 transition opacity-90 hover:opacity-100"
+        >
+          <Image
+            src={brand.logoMark}
+            alt="RentalsLogic"
+            width={36}
+            height={36}
+            className="size-9 object-contain invert"
+            priority
+          />
+          <div className="min-w-0">
+            <p className="font-heading text-base font-semibold tracking-tight text-neutral-950">
+              RentalsLogic
+            </p>
+            <p className="text-xs text-neutral-500">Tenant portal</p>
+          </div>
         </Link>
-        <p className="text-xs text-muted-foreground">Tenant Portal</p>
       </div>
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const active =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        );
-      })}
+
+      <div className="flex flex-1 flex-col gap-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active =
+            item.href === routes.tenant.root
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
+                active
+                  ? "bg-neutral-950 text-white shadow-sm"
+                  : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950"
+              )}
+            >
+              <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
