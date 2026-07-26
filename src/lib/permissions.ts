@@ -53,7 +53,9 @@ export async function getLandlordProperties(userId: string) {
         select: {
           rooms: true,
           tenancies: true,
-          maintenanceRequests: { where: { status: { not: "COMPLETED" } } },
+          maintenanceRequests: {
+            where: { status: { in: ["OPEN", "IN_PROGRESS"] } },
+          },
           certificates: true,
         },
       },

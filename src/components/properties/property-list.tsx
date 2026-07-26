@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { Plus, Building2, Loader2 } from "lucide-react";
+import { Plus, Building2, Loader2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +34,11 @@ interface PropertySummary {
   propertyType: string;
   rentAmount: string | number;
   rentPeriod?: string;
-  _count?: { rooms: number; tenancies: number };
+  _count?: {
+    rooms: number;
+    tenancies: number;
+    maintenanceRequests?: number;
+  };
 }
 
 export function PropertyList() {
@@ -194,29 +198,43 @@ export function PropertyList() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {properties.map((property) => (
-            <Link key={property.id} href={`/dashboard/properties/${property.id}`}>
-              <Card className="transition-shadow hover:shadow-md">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">{property.address}</CardTitle>
-                    <Badge variant="secondary">{property.propertyType}</Badge>
-                  </div>
-                  {property.city && (
-                    <p className="text-sm text-muted-foreground">{property.city}</p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <p className="font-semibold">
-                    £{property.rentAmount}/{property.rentPeriod?.toLowerCase()}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {property._count?.rooms ?? 0} rooms · {property._count?.tenancies ?? 0} tenants
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+          {properties.map((property) => {
+            const openJobs = property._count?.maintenanceRequests ?? 0;
+            const needsWork = openJobs > 0;
+
+            return (
+              <Link key={property.id} href={`/dashboard/properties/${property.id}`}>
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg">{property.address}</CardTitle>
+                      <Badge variant="secondary">{property.propertyType}</Badge>
+                    </div>
+                    {property.city && (
+                      <p className="text-sm text-muted-foreground">{property.city}</p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="font-semibold">
+                      £{property.rentAmount}/{property.rentPeriod?.toLowerCase()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {property._count?.rooms ?? 0} rooms · {property._count?.tenancies ?? 0}{" "}
+                      tenants
+                    </p>
+                    {needsWork && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950 px-2.5 py-1 text-xs font-medium text-white">
+                        <Wrench className="size-3.5" strokeWidth={2} />
+                        {openJobs === 1
+                          ? "1 open maintenance job"
+                          : `${openJobs} open maintenance jobs`}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
