@@ -328,7 +328,7 @@ export function HomeLanding() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.12),_transparent_55%)]" />
         <Reveal className="relative mx-auto max-w-3xl px-6 text-center">
           <Image
-            src={brand.logoWhite}
+            src={brand.logoMark}
             alt=""
             width={72}
             height={72}

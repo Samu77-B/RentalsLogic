@@ -124,11 +124,11 @@ export function MarketingFooter({
     >
       <div className="mx-auto max-w-6xl px-6">
         <Image
-          src={brand.logoWhiteLandscape}
+          src={brand.logoMark}
           alt="RentalsLogic"
-          width={140}
-          height={34}
-          className="mx-auto h-7 w-auto opacity-90"
+          width={56}
+          height={56}
+          className="mx-auto h-12 w-12 object-contain opacity-90"
         />
         <p className="mt-6">
           Tenants: use the invitation link in your email to access your portal.

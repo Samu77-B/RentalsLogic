@@ -1,6 +1,6 @@
 export const brand = {
   logoOrange: "/brand/RentalsLogic_logo24 - Orange.png",
-  logoMark: "/brand/RL-256.png",
+  logoMark: "/brand/rentalsLogo.png",
   logoGrey: "/brand/RL_logo26_Gry.png",
   logoGreyLandscape: "/brand/RL_logo26_Gry_landscape.png",
   logoWhite: "/brand/RL_logo26_Wht.png",
