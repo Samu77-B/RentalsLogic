@@ -162,11 +162,11 @@ export function HomeLanding() {
           }`}
         >
           <Image
-            src={brand.logoWhiteLandscape}
+            src={brand.logoMark}
             alt="RentalsLogic"
-            width={330}
-            height={78}
-            className="mb-8 h-[3.75rem] w-auto md:h-[4.5rem]"
+            width={96}
+            height={96}
+            className="mb-8 h-16 w-16 object-contain md:h-20 md:w-20"
             priority
           />
           <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl md:text-6xl md:leading-[1.05]">
