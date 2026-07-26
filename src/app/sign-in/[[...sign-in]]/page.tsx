@@ -19,8 +19,9 @@ const clerkAppearance = {
     card: "shadow-2xl shadow-black/25 border border-white/60 rounded-3xl bg-white/95 backdrop-blur-md",
     headerTitle: "font-heading text-2xl font-semibold tracking-tight",
     headerSubtitle: "text-neutral-500",
-    socialButtonsBlockButton:
-      "border border-black/10 rounded-full hover:bg-neutral-50",
+    socialButtons: "hidden",
+    socialButtonsBlockButton: "hidden",
+    dividerRow: "hidden",
     formButtonPrimary:
       "rounded-full bg-neutral-950 hover:bg-neutral-800 text-sm font-medium normal-case shadow-none",
     footerActionLink: "text-neutral-950 font-medium hover:text-neutral-700",
