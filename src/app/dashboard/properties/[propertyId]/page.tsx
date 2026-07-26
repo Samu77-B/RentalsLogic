@@ -1,4 +1,5 @@
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PropertyHeader } from "@/components/properties/property-header";
 import { PropertyDetail } from "@/components/properties/property-detail";
 import {
   MeterReadingsPanel,
@@ -15,6 +16,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   return (
     <DashboardShell>
+      <PropertyHeader propertyId={propertyId} />
       <Tabs defaultValue="inventory">
         <TabsList>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>

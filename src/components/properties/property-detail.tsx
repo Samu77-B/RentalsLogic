@@ -90,7 +90,6 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     photoUrls: [] as string[],
   });
   const [itemSaving, setItemSaving] = useState(false);
-  const [coverSaving, setCoverSaving] = useState(false);
 
   const emptyItemForm = {
     name: "",
@@ -134,25 +133,6 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       toast.success("Room added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add room");
-    }
-  }
-
-  async function saveCoverPhoto(url: string) {
-    setCoverSaving(true);
-    try {
-      const res = await fetch(`/api/properties/${propertyId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverPhotoUrl: url }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Failed to save property photo");
-      await reloadSWR(mutate, propertyUrl);
-      toast.success("Property photo updated");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save property photo");
-    } finally {
-      setCoverSaving(false);
     }
   }
 
@@ -279,45 +259,6 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold">{property.address}</h1>
-          <p className="text-muted-foreground">
-            £{property.rentAmount}/{property.rentPeriod?.toLowerCase()} · {property.propertyType}
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-black/5">
-          {property.coverPhotoUrl ? (
-            <div className="relative h-52 w-full sm:h-64">
-              <Image
-                src={property.coverPhotoUrl}
-                alt={property.address}
-                fill
-                className="object-cover"
-                unoptimized={property.coverPhotoUrl.startsWith("data:")}
-              />
-            </div>
-          ) : (
-            <div className="flex h-40 items-center justify-center bg-[#f5f5f7] text-sm text-neutral-500">
-              No property photo yet
-            </div>
-          )}
-          <div className="flex flex-wrap items-center gap-3 p-4">
-            <FileUpload
-              label={property.coverPhotoUrl ? "Change property photo" : "Add property photo"}
-              onUpload={saveCoverPhoto}
-            />
-            {coverSaving && (
-              <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Rooms & Inventory</h2>
