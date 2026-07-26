@@ -1,7 +1,7 @@
 "use client";
 
 import { SignUp } from "@clerk/nextjs";
-import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { AuthShell } from "@/components/marketing/marketing-shell";
 
 const clerkAppearance = {
   variables: {
@@ -16,7 +16,7 @@ const clerkAppearance = {
   },
   elements: {
     rootBox: "mx-auto w-full max-w-[420px]",
-    card: "shadow-none border border-black/5 rounded-3xl bg-white",
+    card: "shadow-2xl shadow-black/25 border border-white/60 rounded-3xl bg-white/95 backdrop-blur-md",
     headerTitle: "text-2xl font-semibold tracking-tight",
     headerSubtitle: "text-neutral-500",
     socialButtonsBlockButton:
@@ -30,22 +30,22 @@ const clerkAppearance = {
 
 export default function SignUpPage() {
   return (
-    <MarketingShell>
-      <div className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
-            <p className="mt-2 text-neutral-500">
-              Set up your landlord workspace and add your first property.
-            </p>
-          </div>
-          <SignUp
-            fallbackRedirectUrl="/auth/redirect"
-            forceRedirectUrl="/auth/redirect"
-            appearance={clerkAppearance}
-          />
+    <AuthShell>
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-8 text-center text-white">
+          <h1 className="text-3xl font-semibold tracking-tight drop-shadow-sm">
+            Create your account
+          </h1>
+          <p className="mt-2 text-white/80">
+            Set up your landlord workspace and add your first property.
+          </p>
         </div>
+        <SignUp
+          fallbackRedirectUrl="/auth/redirect"
+          forceRedirectUrl="/auth/redirect"
+          appearance={clerkAppearance}
+        />
       </div>
-    </MarketingShell>
+    </AuthShell>
   );
 }

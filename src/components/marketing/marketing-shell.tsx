@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import useSWR from "swr";
-import { brand } from "@/lib/brand-assets";
+import { brand, marketing } from "@/lib/brand-assets";
 import { routes } from "@/config/routes";
 import { swrFetcher } from "@/lib/swr";
 
@@ -107,16 +107,28 @@ function MarketingNav({ light }: { light: boolean }) {
   );
 }
 
-export function MarketingFooter() {
+export function MarketingFooter({
+  variant = "solid",
+}: {
+  variant?: "solid" | "glass";
+}) {
+  const glass = variant === "glass";
+
   return (
-    <footer className="mt-auto shrink-0 border-t border-black/5 bg-white py-12 text-center text-sm text-neutral-500">
+    <footer
+      className={`relative z-20 mt-auto shrink-0 border-t py-10 text-center text-sm ${
+        glass
+          ? "border-white/15 bg-neutral-950/75 text-white/75 backdrop-blur-xl"
+          : "border-black/5 bg-white text-neutral-500"
+      }`}
+    >
       <div className="mx-auto max-w-6xl px-6">
         <Image
-          src={brand.logoGreyLandscape}
+          src={glass ? brand.logoWhiteLandscape : brand.logoGreyLandscape}
           alt="RentalsLogic"
           width={140}
           height={34}
-          className="mx-auto h-7 w-auto opacity-80"
+          className={`mx-auto h-7 w-auto ${glass ? "opacity-90" : "opacity-80"}`}
         />
         <p className="mt-6">
           Tenants: use the invitation link in your email to access your portal.
@@ -130,7 +142,11 @@ export function MarketingFooter() {
             href="https://paradigmstudio.net/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-neutral-800 underline underline-offset-2 hover:text-neutral-950"
+            className={
+              glass
+                ? "text-white underline underline-offset-2 hover:text-white/90"
+                : "text-neutral-800 underline underline-offset-2 hover:text-neutral-950"
+            }
           >
             Paradigm Studio
           </a>
@@ -140,13 +156,39 @@ export function MarketingFooter() {
   );
 }
 
-/** Shared chrome for marketing + auth pages (header + footer). */
+/** Shared chrome for marketing pages (header + footer). */
 export function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col bg-[#f5f5f7] text-neutral-950">
       <MarketingHeader variant="light" />
       <main className="flex flex-1 flex-col pt-16">{children}</main>
       <MarketingFooter />
+    </div>
+  );
+}
+
+/** Sign-in / sign-up shell with full-bleed photo background. */
+export function AuthShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative flex min-h-svh flex-col text-neutral-950">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <Image
+          src={marketing.authBackground}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-neutral-950/45" />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-transparent to-neutral-950/70" />
+      </div>
+
+      <MarketingHeader variant="overlay" />
+      <main className="relative z-10 flex flex-1 flex-col justify-center px-6 pb-12 pt-24">
+        {children}
+      </main>
+      <MarketingFooter variant="glass" />
     </div>
   );
 }

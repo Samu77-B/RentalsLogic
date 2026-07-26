@@ -9,6 +9,7 @@ export const brand = {
 
 export const marketing = {
   heroVideo: "/images/hero/hero.mp4",
+  authBackground: "/images/hero/signin-image.jpeg",
   productInventory: "/images/product-inventory.png",
   productInspections: "/images/product-inspections.png",
 } as const;
