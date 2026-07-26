@@ -178,13 +178,13 @@ export function HomeLanding() {
                 }`}
                 style={{ transitionDelay: `${150 + index * 80}ms` }}
               >
-                <div className="mb-5 overflow-hidden rounded-2xl ring-1 ring-black/5">
+                <div className="mb-5 size-20 overflow-hidden rounded-xl">
                   <Image
                     src={feature.icon}
                     alt=""
                     width={160}
                     height={160}
-                    className="h-20 w-20 object-cover"
+                    className="size-full rounded-xl object-cover"
                   />
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight">{feature.title}</h3>
