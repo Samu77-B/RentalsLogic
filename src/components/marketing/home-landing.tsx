@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import useSWR from "swr";
 import { AuthButtons } from "@/components/shared/auth-buttons";
@@ -35,6 +35,52 @@ const features = [
 
 type MeResponse = { homeRoute: string; role: string };
 
+const outlineBtn =
+  "inline-flex items-center justify-center rounded-full border border-white bg-transparent font-medium text-white transition hover:bg-white/10";
+
+function HeroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    const tryPlay = () => {
+      void video.play().catch(() => {
+        // Autoplay can fail until interaction; muted + playsInline usually succeeds.
+      });
+    };
+
+    tryPlay();
+    video.addEventListener("loadeddata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+    return () => {
+      video.removeEventListener("loadeddata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      className="absolute inset-0 h-full w-full object-cover"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      poster={marketing.productInventory}
+      aria-hidden
+    >
+      <source src={marketing.heroVideo} type="video/mp4" />
+    </video>
+  );
+}
+
 function HeroActions() {
   const { isSignedIn } = useAuth();
   const { data: me } = useSWR<MeResponse>(isSignedIn ? "/api/me" : null, swrFetcher);
@@ -43,10 +89,7 @@ function HeroActions() {
     const href = me?.homeRoute ?? routes.dashboard.root;
     const label = me?.role === "TENANT" ? "Go to my portal" : "Go to dashboard";
     return (
-      <Link
-        href={href}
-        className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-[15px] font-medium text-neutral-950 transition hover:bg-white/90"
-      >
+      <Link href={href} className={`${outlineBtn} h-12 px-8 text-[15px]`}>
         {label}
       </Link>
     );
@@ -55,17 +98,14 @@ function HeroActions() {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3">
       <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button
-          type="button"
-          className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-[15px] font-medium text-neutral-950 transition hover:bg-white/90"
-        >
+        <button type="button" className={`${outlineBtn} h-12 px-8 text-[15px]`}>
           Start free trial
         </button>
       </SignUpButton>
       <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
         <button
           type="button"
-          className="inline-flex h-12 items-center justify-center rounded-full border border-white/35 bg-white/10 px-8 text-[15px] font-medium text-white backdrop-blur-sm transition hover:bg-white/15"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-white/40 bg-white/10 px-8 text-[15px] font-medium text-white backdrop-blur-sm transition hover:bg-white/15"
         >
           Sign in
         </button>
@@ -98,41 +138,26 @@ export function HomeLanding() {
             : "bg-transparent"
         }`}
       >
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-5 md:px-6">
+          <Link href="/" className="flex shrink-0 items-center">
             <Image
               src={scrolled ? brand.logoGreyLandscape : brand.logoWhiteLandscape}
               alt="RentalsLogic"
-              width={148}
-              height={36}
-              className="h-8 w-auto"
+              width={222}
+              height={54}
+              className="h-12 w-auto"
               priority
             />
           </Link>
-          <div className={scrolled ? "" : "[&_button]:text-white [&_button]:hover:bg-white/10"}>
-            {scrolled ? (
-              <AuthButtons />
-            ) : (
-              <HeaderAuthLight />
-            )}
+          <div className="shrink-0">
+            {scrolled ? <AuthButtons /> : <HeaderAuthLight />}
           </div>
         </div>
       </header>
 
-      {/* Hero — one composition: brand, headline, support, CTA, full-bleed video */}
       <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-neutral-950 text-white">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden
-        >
-          <source src={marketing.heroVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/25" />
+        <HeroVideo />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/20" />
 
         <div
           className={`relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-32 transition duration-700 md:pb-28 ${
@@ -142,9 +167,9 @@ export function HomeLanding() {
           <Image
             src={brand.logoWhiteLandscape}
             alt="RentalsLogic"
-            width={220}
-            height={52}
-            className="mb-8 h-10 w-auto md:h-12"
+            width={330}
+            height={78}
+            className="mb-8 h-[3.75rem] w-auto md:h-[4.5rem]"
             priority
           />
           <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl md:text-6xl md:leading-[1.05]">
@@ -159,7 +184,6 @@ export function HomeLanding() {
         </div>
       </section>
 
-      {/* Features — no cards, Apple-style icon + copy */}
       <section className="border-b border-black/5 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-6">
           <p className="text-sm font-medium tracking-wide text-neutral-500 uppercase">
@@ -197,7 +221,6 @@ export function HomeLanding() {
         </div>
       </section>
 
-      {/* Product visuals */}
       <section className="bg-[#f5f5f7] py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -250,7 +273,6 @@ export function HomeLanding() {
         </div>
       </section>
 
-      {/* Closing CTA */}
       <section className="relative overflow-hidden bg-neutral-950 py-28 text-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.12),_transparent_55%)]" />
         <div className="relative mx-auto max-w-3xl px-6 text-center">
@@ -309,27 +331,21 @@ function HeaderAuthLight() {
     const href = me?.homeRoute ?? routes.dashboard.root;
     const label = me?.role === "TENANT" ? "My portal" : "Dashboard";
     return (
-      <Link
-        href={href}
-        className="inline-flex h-8 items-center rounded-full bg-white px-4 text-sm font-medium text-neutral-950"
-      >
+      <Link href={href} className={`${outlineBtn} h-9 px-4 text-sm`}>
         {label}
       </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button type="button" className="px-3 text-sm font-medium text-white/90 hover:text-white">
+        <button type="button" className="px-1 text-sm font-medium text-white/90 hover:text-white">
           Sign in
         </button>
       </SignInButton>
       <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button
-          type="button"
-          className="inline-flex h-8 items-center rounded-full bg-white px-4 text-sm font-medium text-neutral-950"
-        >
+        <button type="button" className={`${outlineBtn} h-9 px-4 text-sm`}>
           Get started
         </button>
       </SignUpButton>
@@ -345,7 +361,7 @@ function HeroCtaDark() {
     return (
       <Link
         href={me?.homeRoute ?? routes.dashboard.root}
-        className="inline-flex h-12 items-center rounded-full bg-white px-8 text-[15px] font-medium text-neutral-950"
+        className={`${outlineBtn} h-12 px-8 text-[15px]`}
       >
         {me?.role === "TENANT" ? "Open portal" : "Open dashboard"}
       </Link>
@@ -354,10 +370,7 @@ function HeroCtaDark() {
 
   return (
     <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-      <button
-        type="button"
-        className="inline-flex h-12 items-center rounded-full bg-white px-8 text-[15px] font-medium text-neutral-950 transition hover:bg-white/90"
-      >
+      <button type="button" className={`${outlineBtn} h-12 px-8 text-[15px]`}>
         Start free trial
       </button>
     </SignUpButton>
