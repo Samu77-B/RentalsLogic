@@ -133,17 +133,18 @@ model TenantProfile {
 }
 
 model Property {
-  id           String       @id @default(cuid())
-  ownerId      String
-  propertyType PropertyType
-  address      String
-  city         String?
-  postcode     String?
-  rentAmount   Decimal      @db.Decimal(10, 2)
-  rentPeriod   RentPeriod   @default(MONTHLY)
-  region       String       @default("england")
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  ownerId       String
+  propertyType  PropertyType
+  address       String
+  city          String?
+  postcode      String?
+  rentAmount    Decimal      @db.Decimal(10, 2)
+  rentPeriod    RentPeriod   @default(MONTHLY)
+  region        String       @default("england")
+  coverPhotoUrl String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   owner               User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rooms               Room[]

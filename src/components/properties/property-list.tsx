@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FileUpload } from "@/components/shared/file-upload";
 import { swrFetcher, reloadSWR } from "@/lib/swr";
+import Image from "next/image";
 
 interface PropertySummary {
   id: string;
@@ -34,6 +36,7 @@ interface PropertySummary {
   propertyType: string;
   rentAmount: string | number;
   rentPeriod?: string;
+  coverPhotoUrl?: string | null;
   _count?: {
     rooms: number;
     tenancies: number;
@@ -57,6 +60,7 @@ export function PropertyList() {
     propertyType: "APARTMENT",
     rentAmount: "",
     rentPeriod: "MONTHLY",
+    coverPhotoUrl: "",
   });
 
   async function handleCreate(e: React.FormEvent) {
@@ -75,7 +79,11 @@ export function PropertyList() {
       const res = await fetch("/api/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, rentAmount }),
+        body: JSON.stringify({
+          ...form,
+          rentAmount,
+          coverPhotoUrl: form.coverPhotoUrl || null,
+        }),
       });
       const data = await res.json().catch(() => ({}));
 
@@ -91,6 +99,7 @@ export function PropertyList() {
         propertyType: "APARTMENT",
         rentAmount: "",
         rentPeriod: "MONTHLY",
+        coverPhotoUrl: "",
       });
       await reloadSWR(mutate, propertiesUrl);
       toast.success("Property created");
@@ -169,6 +178,24 @@ export function PropertyList() {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Property photo</Label>
+                <FileUpload
+                  label="Upload photo"
+                  onUpload={(url) => setForm((prev) => ({ ...prev, coverPhotoUrl: url }))}
+                />
+                {form.coverPhotoUrl && (
+                  <div className="relative h-28 w-full overflow-hidden rounded-xl border">
+                    <Image
+                      src={form.coverPhotoUrl}
+                      alt="Property preview"
+                      fill
+                      className="object-cover"
+                      unoptimized={form.coverPhotoUrl.startsWith("data:")}
+                    />
+                  </div>
+                )}
+              </div>
               {error && (
                 <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {error}
@@ -204,7 +231,18 @@ export function PropertyList() {
 
             return (
               <Link key={property.id} href={`/dashboard/properties/${property.id}`}>
-                <Card className="h-full transition-shadow hover:shadow-md">
+                <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+                  {property.coverPhotoUrl ? (
+                    <div className="relative h-40 w-full bg-muted">
+                      <Image
+                        src={property.coverPhotoUrl}
+                        alt={property.address}
+                        fill
+                        className="object-cover"
+                        unoptimized={property.coverPhotoUrl.startsWith("data:")}
+                      />
+                    </div>
+                  ) : null}
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-lg">{property.address}</CardTitle>

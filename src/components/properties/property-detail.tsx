@@ -32,6 +32,12 @@ interface InventoryPhoto {
   url: string;
 }
 
+interface RoomPhoto {
+  id: string;
+  url: string;
+  caption?: string | null;
+}
+
 interface InventoryItem {
   id: string;
   name: string;
@@ -45,7 +51,7 @@ interface Room {
   name: string;
   roomType: string;
   inventoryItems: InventoryItem[];
-  roomPhotos?: unknown[];
+  roomPhotos?: RoomPhoto[];
 }
 
 interface Property {
@@ -54,6 +60,7 @@ interface Property {
   rentAmount: string | number;
   rentPeriod?: string;
   propertyType: string;
+  coverPhotoUrl?: string | null;
   rooms?: Room[];
 }
 
@@ -70,7 +77,11 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   const [roomOpen, setRoomOpen] = useState(false);
   const [editRoomId, setEditRoomId] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState<string | null>(null);
-  const [roomForm, setRoomForm] = useState({ name: "", roomType: "BEDROOM" });
+  const [roomForm, setRoomForm] = useState({
+    name: "",
+    roomType: "BEDROOM",
+    photoUrls: [] as string[],
+  });
   const [editRoomForm, setEditRoomForm] = useState({ name: "", roomType: "BEDROOM" });
   const [itemForm, setItemForm] = useState({
     name: "",
@@ -79,6 +90,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
     photoUrls: [] as string[],
   });
   const [itemSaving, setItemSaving] = useState(false);
+  const [coverSaving, setCoverSaving] = useState(false);
 
   const emptyItemForm = {
     name: "",
@@ -116,12 +128,59 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
       if (!res.ok) throw new Error(room.error || "Failed to add room");
 
       setRoomOpen(false);
-      setRoomForm({ name: "", roomType: "BEDROOM" });
+      setRoomForm({ name: "", roomType: "BEDROOM", photoUrls: [] });
 
       await reloadSWR(mutate, propertyUrl);
       toast.success("Room added");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add room");
+    }
+  }
+
+  async function saveCoverPhoto(url: string) {
+    setCoverSaving(true);
+    try {
+      const res = await fetch(`/api/properties/${propertyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverPhotoUrl: url }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to save property photo");
+      await reloadSWR(mutate, propertyUrl);
+      toast.success("Property photo updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save property photo");
+    } finally {
+      setCoverSaving(false);
+    }
+  }
+
+  async function addRoomPhoto(roomId: string, url: string) {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/photos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to add room photo");
+      await reloadSWR(mutate, propertyUrl);
+      toast.success("Room photo added");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add room photo");
+    }
+  }
+
+  async function deleteRoomPhoto(photoId: string) {
+    try {
+      const res = await fetch(`/api/room-photos/${photoId}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to delete photo");
+      await reloadSWR(mutate, propertyUrl);
+      toast.success("Photo removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete photo");
     }
   }
 
@@ -220,17 +279,55 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">{property.address}</h1>
-        <p className="text-muted-foreground">
-          £{property.rentAmount}/{property.rentPeriod?.toLowerCase()} · {property.propertyType}
-        </p>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold">{property.address}</h1>
+          <p className="text-muted-foreground">
+            £{property.rentAmount}/{property.rentPeriod?.toLowerCase()} · {property.propertyType}
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-black/5">
+          {property.coverPhotoUrl ? (
+            <div className="relative h-52 w-full sm:h-64">
+              <Image
+                src={property.coverPhotoUrl}
+                alt={property.address}
+                fill
+                className="object-cover"
+                unoptimized={property.coverPhotoUrl.startsWith("data:")}
+              />
+            </div>
+          ) : (
+            <div className="flex h-40 items-center justify-center bg-[#f5f5f7] text-sm text-neutral-500">
+              No property photo yet
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3 p-4">
+            <FileUpload
+              label={property.coverPhotoUrl ? "Change property photo" : "Add property photo"}
+              onUpload={saveCoverPhoto}
+            />
+            {coverSaving && (
+              <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Saving...
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Rooms & Inventory</h2>
-          <Dialog open={roomOpen} onOpenChange={setRoomOpen}>
+          <Dialog
+            open={roomOpen}
+            onOpenChange={(open) => {
+              setRoomOpen(open);
+              if (!open) setRoomForm({ name: "", roomType: "BEDROOM", photoUrls: [] });
+            }}
+          >
             <DialogTrigger render={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Room</Button>} />
             <DialogContent>
               <DialogHeader><DialogTitle>Add Room</DialogTitle></DialogHeader>
@@ -256,6 +353,40 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Room photos</Label>
+                  <FileUpload
+                    label="Add photo"
+                    onUpload={(url) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        photoUrls: [...prev.photoUrls, url],
+                      }))
+                    }
+                  />
+                  {roomForm.photoUrls.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {roomForm.photoUrls.map((url, index) => (
+                        <div key={`${url}-${index}`} className="relative h-16 w-16 overflow-hidden rounded border">
+                          <Image src={url} alt="" fill className="object-cover" unoptimized={url.startsWith("data:")} />
+                          <button
+                            type="button"
+                            className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5"
+                            onClick={() =>
+                              setRoomForm((prev) => ({
+                                ...prev,
+                                photoUrls: prev.photoUrls.filter((_, i) => i !== index),
+                              }))
+                            }
+                            aria-label="Remove photo"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <Button type="submit" className="w-full">Add Room</Button>
               </form>
@@ -371,6 +502,38 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
                     </DialogContent>
                   </Dialog>
                 </div>
+              </div>
+
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">Room photos</p>
+                  <FileUpload label="Add room photo" onUpload={(url) => addRoomPhoto(room.id, url)} />
+                </div>
+                {room.roomPhotos?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {room.roomPhotos.map((photo) => (
+                      <div key={photo.id} className="group relative h-20 w-20 overflow-hidden rounded-xl border">
+                        <Image
+                          src={photo.url}
+                          alt={`${room.name} photo`}
+                          fill
+                          className="object-cover"
+                          unoptimized={photo.url.startsWith("data:")}
+                        />
+                        <button
+                          type="button"
+                          className="absolute top-1 right-1 rounded-full bg-black/70 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                          onClick={() => deleteRoomPhoto(photo.id)}
+                          aria-label="Remove room photo"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No room photos yet</p>
+                )}
               </div>
 
               {!room.inventoryItems?.length ? (

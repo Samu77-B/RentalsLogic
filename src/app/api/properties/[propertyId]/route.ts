@@ -64,6 +64,9 @@ export async function PATCH(request: Request, { params }: Params) {
         rentAmount: body.rentAmount,
         rentPeriod: body.rentPeriod as RentPeriod | undefined,
         region: body.region,
+        ...(body.coverPhotoUrl !== undefined
+          ? { coverPhotoUrl: body.coverPhotoUrl || null }
+          : {}),
       },
     });
 

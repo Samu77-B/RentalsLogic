@@ -41,6 +41,7 @@ export async function POST(request: Request) {
         rentAmount: body.rentAmount,
         rentPeriod: (body.rentPeriod as RentPeriod) ?? RentPeriod.MONTHLY,
         region: body.region ?? "england",
+        coverPhotoUrl: body.coverPhotoUrl || null,
       },
     });
 

@@ -49,7 +49,11 @@ export async function POST(request: Request, { params }: Params) {
         roomType: body.roomType as RoomType,
         name: body.name,
         sortOrder: body.sortOrder ?? 0,
+        roomPhotos: Array.isArray(body.photoUrls) && body.photoUrls.length
+          ? { create: body.photoUrls.map((url: string) => ({ url })) }
+          : undefined,
       },
+      include: { roomPhotos: true },
     });
 
     return jsonOk(room, 201);
