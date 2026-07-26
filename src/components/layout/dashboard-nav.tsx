@@ -50,14 +50,14 @@ export function DashboardNav({
             alt="RentalsLogic"
             width={36}
             height={36}
-            className="size-9 object-contain invert"
+            className="size-9 object-contain"
             priority
           />
           <div className="min-w-0">
-            <p className="font-heading text-base font-semibold tracking-tight text-neutral-950">
+            <p className="font-heading text-base font-semibold tracking-tight text-white">
               RentalsLogic
             </p>
-            <p className="text-xs text-neutral-500">Landlord portal</p>
+            <p className="text-xs text-white/50">Landlord portal</p>
           </div>
         </Link>
       </div>
@@ -78,8 +78,8 @@ export function DashboardNav({
               className={cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-neutral-950 text-white shadow-sm"
-                  : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950"
+                  ? "bg-white text-neutral-950 shadow-sm"
+                  : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="size-4 shrink-0" strokeWidth={1.75} />

@@ -16,20 +16,20 @@ export function DashboardOverview() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-48 rounded-full bg-neutral-200/80" />
+        <div className="h-10 w-48 rounded-full bg-white/10" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-32 rounded-3xl bg-white ring-1 ring-black/5" />
+            <div key={i} className="h-32 rounded-3xl bg-white/10 ring-1 ring-white/10" />
           ))}
         </div>
-        <div className="h-48 rounded-3xl bg-white ring-1 ring-black/5" />
+        <div className="h-48 rounded-3xl bg-white/10 ring-1 ring-white/10" />
       </div>
     );
   }
 
   if (error || data?.error) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 rounded-3xl bg-white p-8 text-center ring-1 ring-black/5">
+      <div className="mx-auto max-w-lg space-y-4 rounded-3xl bg-white p-8 text-center text-neutral-950 ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-sm text-neutral-500">
           {data?.error ||
@@ -77,18 +77,18 @@ export function DashboardOverview() {
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-medium tracking-wide text-neutral-500 uppercase">
+            <p className="text-sm font-medium tracking-wide text-white/50 uppercase">
               Overview
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white md:text-4xl">
               Dashboard
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center rounded-full bg-neutral-950 px-3 py-1 text-xs font-medium text-white">
+              <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-950">
                 Plan: {tier}
               </span>
               {propertyCount === 0 && (
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-white/55">
                   Add your first property to get started
                 </span>
               )}
@@ -98,7 +98,7 @@ export function DashboardOverview() {
           <Button
             nativeButton={false}
             size="lg"
-            className="h-11 rounded-full px-5"
+            className="h-11 rounded-full bg-white px-5 text-neutral-950 hover:bg-white/90"
             render={<Link href={routes.dashboard.properties} />}
           >
             <Plus className="size-4" />
@@ -109,8 +109,8 @@ export function DashboardOverview() {
 
       {propertyCount === 0 && (
         <Reveal delay={80}>
-          <div className="rounded-3xl bg-neutral-950 px-6 py-8 text-white sm:px-8">
-            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+          <div className="rounded-3xl bg-white/8 px-6 py-8 ring-1 ring-white/10 sm:px-8">
+            <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
               Welcome to your landlord workspace
             </h2>
             <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/65">
@@ -137,8 +137,8 @@ export function DashboardOverview() {
             <Link
               href={href}
               className={cn(
-                "group flex h-full flex-col rounded-3xl bg-white p-5 ring-1 ring-black/5 transition",
-                "hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-28px_rgba(0,0,0,0.35)]"
+                "group flex h-full flex-col rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-black/5 transition",
+                "hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-28px_rgba(0,0,0,0.55)]"
               )}
             >
               <div className="flex items-start justify-between gap-3">
@@ -162,7 +162,7 @@ export function DashboardOverview() {
       </div>
 
       <Reveal delay={280}>
-        <section className="rounded-3xl bg-white p-5 ring-1 ring-black/5 sm:p-6">
+        <section className="rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-black/5 sm:p-6">
           <div className="flex items-center gap-2">
             <Activity className="size-4 text-neutral-500" strokeWidth={1.75} />
             <h2 className="text-base font-semibold tracking-tight">Recent activity</h2>

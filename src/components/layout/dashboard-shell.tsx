@@ -17,13 +17,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-svh bg-[#f5f5f7] text-neutral-950">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-black/5 bg-white/80 backdrop-blur-xl md:flex md:flex-col">
+    <div className="min-h-svh bg-[#2c2c2e] text-white">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-[#252528]/90 backdrop-blur-xl md:flex md:flex-col">
         <DashboardNav />
       </aside>
 
       <div className="flex min-h-svh flex-col md:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-black/5 bg-white/55 px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#2c2c2e]/70 px-4 backdrop-blur-xl sm:px-6">
           <div className="flex items-center gap-2 md:hidden">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
@@ -31,7 +31,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full"
+                    className="rounded-full text-white hover:bg-white/10 hover:text-white"
                     aria-label="Open menu"
                   >
                     <Menu className="size-5" />
@@ -40,7 +40,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               />
               <SheetContent
                 side="left"
-                className="w-[min(100%,18rem)] border-black/5 bg-white p-0"
+                className="w-[min(100%,18rem)] border-white/10 bg-[#252528] p-0 text-white"
                 showCloseButton
               >
                 <SheetHeader className="sr-only">
@@ -49,7 +49,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <DashboardNav onNavigate={() => setMobileOpen(false)} />
               </SheetContent>
             </Sheet>
-            <span className="font-heading text-sm font-semibold tracking-tight">
+            <span className="font-heading text-sm font-semibold tracking-tight text-white">
               RentalsLogic
             </span>
           </div>
