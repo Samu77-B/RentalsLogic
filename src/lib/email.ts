@@ -26,6 +26,27 @@ export async function sendEmail({
   });
 }
 
+export async function sendLandlordWelcomeEmail({
+  to,
+  name,
+  dashboardUrl,
+}: {
+  to: string;
+  name: string;
+  dashboardUrl: string;
+}) {
+  await sendEmail({
+    to,
+    subject: "Welcome to RentalsLogic",
+    html: `
+      <h2>Welcome to RentalsLogic</h2>
+      <p>Hi ${name},</p>
+      <p>Thanks for signing up. Your landlord dashboard is ready — add your first property, set up inventories, and invite tenants when you're ready.</p>
+      <p><a href="${dashboardUrl}">Go to your dashboard</a></p>
+    `,
+  });
+}
+
 export async function sendTenantInvite({
   to,
   tenantName,

@@ -1,6 +1,12 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { UserRole } from "@prisma/client";
+import { sendLandlordWelcomeEmail } from "./email";
 import { prisma } from "./prisma";
+
+function dashboardUrl() {
+  const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  return `${base.replace(/\/$/, "")}/dashboard`;
+}
 
 export async function getCurrentDbUser() {
   const { userId } = await auth();
@@ -25,6 +31,15 @@ export async function getCurrentDbUser() {
           role,
         },
       });
+
+      if (role === UserRole.LANDLORD && user.email) {
+        const name = user.fullName || user.email.split("@")[0] || "there";
+        void sendLandlordWelcomeEmail({
+          to: user.email,
+          name,
+          dashboardUrl: dashboardUrl(),
+        }).catch((err) => console.error("Landlord welcome email failed:", err));
+      }
     }
 
     return user;

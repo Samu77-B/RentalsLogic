@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
   const usesPooler =
-    databaseUrl.includes(":6543/") || databaseUrl.includes("pooler.supabase.com");
+    databaseUrl.includes(":6543/") ||
+    databaseUrl.includes("pooler.supabase.com") ||
+    databaseUrl.includes("-pooler.") ||
+    databaseUrl.includes("neon.tech");
   const hasPgbouncer = databaseUrl.includes("pgbouncer=true");
 
   let databaseConnected = false;

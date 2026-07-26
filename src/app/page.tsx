@@ -69,6 +69,17 @@ export default function HomePage() {
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         <p>Tenants: use the invitation link in your email to access your portal.</p>
         <p className="mt-2">© {new Date().getFullYear()} RentalsLogic. All rights reserved.</p>
+        <p className="mt-2">
+          Website designed, built and maintained by{" "}
+          <a
+            href="https://paradigmstudio.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            Paradigm Studio
+          </a>
+        </p>
       </footer>
     </div>
   );

@@ -10,9 +10,23 @@ import { routes } from "@/config/routes";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function DashboardOverview() {
-  const { data, isLoading } = useSWR("/api/dashboard", fetcher);
+  const { data, isLoading, error } = useSWR("/api/dashboard", fetcher);
 
   if (isLoading) return <p className="text-muted-foreground">Loading dashboard...</p>;
+
+  if (error || data?.error) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-destructive">
+          {data?.error || "Could not load dashboard data. Check the database connection."}
+        </p>
+        <Button nativeButton={false} render={<Link href={routes.dashboard.properties} />}>
+          Try properties
+        </Button>
+      </div>
+    );
+  }
 
   const stats = [
     { label: "Properties", value: data?.properties ?? 0, icon: Building2, href: routes.dashboard.properties },
@@ -27,6 +41,11 @@ export function DashboardOverview() {
         <p className="text-muted-foreground">
           Plan: {data?.membershipTier ?? "BASIC"}
         </p>
+        {(data?.properties ?? 0) === 0 && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No properties yet — click Manage properties to add your first one.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -74,7 +93,7 @@ export function DashboardOverview() {
         </CardContent>
       </Card>
 
-      <Button render={<Link href={routes.dashboard.properties} />}>
+      <Button nativeButton={false} render={<Link href={routes.dashboard.properties} />}>
         Manage properties
       </Button>
     </div>

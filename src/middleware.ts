@@ -23,11 +23,17 @@ function isClerkConfigured() {
   );
 }
 
-const clerkHandler = clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect();
+const clerkHandler = clerkMiddleware(
+  async (auth, request) => {
+    if (!isPublicRoute(request)) {
+      await auth.protect();
+    }
+  },
+  {
+    // Default is 5s; local Windows clocks are often ~10–20s behind and break JWT nbf/iat checks
+    clockSkewInMs: 60_000,
   }
-});
+);
 
 export default function middleware(request: NextRequest, event: unknown) {
   if (request.nextUrl.pathname === "/api/setup-check") {

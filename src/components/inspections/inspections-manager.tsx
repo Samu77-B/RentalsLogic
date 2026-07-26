@@ -156,7 +156,7 @@ export function InspectionsManager() {
                 </div>
               </CardHeader>
               <CardContent className="flex gap-2">
-                <Button size="sm" variant="outline" render={<Link href={`/reports/${report.id}`} />}>
+                <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/reports/${report.id}`} />}>
                   View / Export
                 </Button>
                 {report.status === "DRAFT" && (
