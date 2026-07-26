@@ -17,7 +17,7 @@ const clerkAppearance = {
   elements: {
     rootBox: "mx-auto w-full max-w-[420px]",
     card: "shadow-2xl shadow-black/25 border border-white/60 rounded-3xl bg-white/95 backdrop-blur-md",
-    headerTitle: "text-2xl font-semibold tracking-tight",
+    headerTitle: "font-heading text-2xl font-semibold tracking-tight",
     headerSubtitle: "text-neutral-500",
     socialButtonsBlockButton:
       "border border-black/10 rounded-full hover:bg-neutral-50",
@@ -33,7 +33,7 @@ export default function SignInPage() {
     <AuthShell>
       <div className="mx-auto w-full max-w-md">
         <div className="mb-8 text-center text-white">
-          <h1 className="text-3xl font-semibold tracking-tight drop-shadow-sm">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight drop-shadow-sm">
             Welcome back
           </h1>
           <p className="mt-2 text-white/80">
