@@ -19,10 +19,10 @@ export function MarketingHeader({
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
         light
-          ? "border-b border-black/5 bg-[#f5f5f7]/90 backdrop-blur-xl"
-          : "bg-transparent"
+          ? "border-b border-black/5 bg-[#f5f5f7]/95 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent"
       }`}
     >
       <div className="flex h-16 w-full items-center justify-between px-4 sm:px-5 md:px-6">
@@ -109,7 +109,7 @@ function MarketingNav({ light }: { light: boolean }) {
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-black/5 bg-white py-12 text-center text-sm text-neutral-500">
+    <footer className="mt-auto shrink-0 border-t border-black/5 bg-white py-12 text-center text-sm text-neutral-500">
       <div className="mx-auto max-w-6xl px-6">
         <Image
           src={brand.logoGreyLandscape}
@@ -140,9 +140,10 @@ export function MarketingFooter() {
   );
 }
 
+/** Shared chrome for marketing + auth pages (header + footer). */
 export function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f5f7] text-neutral-950">
+    <div className="flex min-h-svh flex-col bg-[#f5f5f7] text-neutral-950">
       <MarketingHeader variant="light" />
       <main className="flex flex-1 flex-col pt-16">{children}</main>
       <MarketingFooter />

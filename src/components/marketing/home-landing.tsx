@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import useSWR from "swr";
-import { AuthButtons } from "@/components/shared/auth-buttons";
-import { MarketingFooter } from "@/components/marketing/marketing-shell";
+import { MarketingFooter, MarketingHeader } from "@/components/marketing/marketing-shell";
 import { brand, icons, marketing } from "@/lib/brand-assets";
 import { routes } from "@/config/routes";
 import { swrFetcher } from "@/lib/swr";
@@ -130,29 +129,7 @@ export function HomeLanding() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-neutral-950">
-      <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "border-b border-black/5 bg-[#f5f5f7]/80 backdrop-blur-xl"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-5 md:px-6">
-          <Link href="/" className="flex shrink-0 items-center">
-            <Image
-              src={scrolled ? brand.logoGreyLandscape : brand.logoWhiteLandscape}
-              alt="RentalsLogic"
-              width={222}
-              height={54}
-              className="h-12 w-auto"
-              priority
-            />
-          </Link>
-          <div className="shrink-0">
-            {scrolled ? <AuthButtons /> : <HeaderAuthLight />}
-          </div>
-        </div>
-      </header>
+      <MarketingHeader variant={scrolled ? "light" : "overlay"} />
 
       <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-neutral-950 text-white">
         <HeroVideo />
@@ -295,36 +272,6 @@ export function HomeLanding() {
       </section>
 
       <MarketingFooter />
-    </div>
-  );
-}
-
-function HeaderAuthLight() {
-  const { isSignedIn } = useAuth();
-  const { data: me } = useSWR<MeResponse>(isSignedIn ? "/api/me" : null, swrFetcher);
-
-  if (isSignedIn) {
-    const href = me?.homeRoute ?? routes.dashboard.root;
-    const label = me?.role === "TENANT" ? "My portal" : "Dashboard";
-    return (
-      <Link href={href} className={`${outlineBtn} h-9 px-4 text-sm`}>
-        {label}
-      </Link>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-3">
-      <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button type="button" className="px-1 text-sm font-medium text-white/90 hover:text-white">
-          Sign in
-        </button>
-      </SignInButton>
-      <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button type="button" className={`${outlineBtn} h-9 px-4 text-sm`}>
-          Get started
-        </button>
-      </SignUpButton>
     </div>
   );
 }
