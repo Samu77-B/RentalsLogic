@@ -166,24 +166,26 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
 /** Sign-in / sign-up shell with full-bleed photo background. */
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-svh flex-col text-neutral-950">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <Image
-          src={marketing.authBackground}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-neutral-950/45" />
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-transparent to-neutral-950/70" />
-      </div>
+    <div className="flex flex-col text-neutral-950">
+      <section className="relative flex min-h-[100vh] flex-col">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <Image
+            src={marketing.authBackground}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-neutral-950/45" />
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-transparent to-neutral-950/70" />
+        </div>
 
-      <MarketingHeader variant="overlay" />
-      <main className="relative z-10 flex flex-1 flex-col justify-center px-6 pb-12 pt-24">
-        {children}
-      </main>
+        <MarketingHeader variant="overlay" />
+        <main className="relative z-10 flex flex-1 flex-col justify-center px-6 pb-12 pt-24">
+          {children}
+        </main>
+      </section>
       <MarketingFooter variant="glass" />
     </div>
   );
