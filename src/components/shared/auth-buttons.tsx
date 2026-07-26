@@ -61,8 +61,8 @@ export function HeroCta() {
   }
 
   return (
-    <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-      <Button size="lg">Start free trial</Button>
-    </SignUpButton>
+    <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
+      <Button size="lg">Sign in</Button>
+    </SignInButton>
   );
 }

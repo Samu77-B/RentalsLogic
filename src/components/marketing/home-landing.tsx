@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import useSWR from "swr";
 import { AuthButtons } from "@/components/shared/auth-buttons";
+import { MarketingFooter } from "@/components/marketing/marketing-shell";
 import { brand, icons, marketing } from "@/lib/brand-assets";
 import { routes } from "@/config/routes";
 import { swrFetcher } from "@/lib/swr";
@@ -95,19 +96,19 @@ function HeroActions() {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-3">
-      <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
-        <button type="button" className={`${outlineBtn} h-12 px-8 text-[15px]`}>
-          Start free trial
-        </button>
-      </SignUpButton>
       <SignInButton mode="redirect" forceRedirectUrl="/auth/redirect">
+        <button type="button" className={`${outlineBtn} h-12 px-8 text-[15px]`}>
+          Sign in
+        </button>
+      </SignInButton>
+      <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
         <button
           type="button"
           className="inline-flex h-12 items-center justify-center rounded-full border border-white/40 bg-white/10 px-8 text-[15px] font-medium text-white backdrop-blur-sm transition hover:bg-white/15"
         >
-          Sign in
+          Get started
         </button>
-      </SignInButton>
+      </SignUpButton>
     </div>
   );
 }
@@ -293,30 +294,7 @@ export function HomeLanding() {
         </div>
       </section>
 
-      <footer className="border-t border-black/5 bg-white py-12 text-center text-sm text-neutral-500">
-        <div className="mx-auto max-w-6xl px-6">
-          <Image
-            src={brand.logoGreyLandscape}
-            alt="RentalsLogic"
-            width={140}
-            height={34}
-            className="mx-auto h-7 w-auto opacity-80"
-          />
-          <p className="mt-6">Tenants: use the invitation link in your email to access your portal.</p>
-          <p className="mt-2">© {new Date().getFullYear()} RentalsLogic. All rights reserved.</p>
-          <p className="mt-2">
-            Website designed, built and maintained by{" "}
-            <a
-              href="https://paradigmstudio.net/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-neutral-800 underline underline-offset-2 hover:text-neutral-950"
-            >
-              Paradigm Studio
-            </a>
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
@@ -369,7 +347,7 @@ function HeroCtaDark() {
   return (
     <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
       <button type="button" className={`${outlineBtn} h-12 px-8 text-[15px]`}>
-        Start free trial
+        Get started
       </button>
     </SignUpButton>
   );
