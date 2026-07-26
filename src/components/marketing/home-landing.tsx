@@ -180,9 +180,9 @@ export function HomeLanding() {
         </div>
       </section>
 
-      <section className="border-b border-black/5 bg-white py-24 md:py-32">
+      <section className="border-b border-white/10 bg-[#2c2c2e] py-24 text-white md:py-32">
         <div className="mx-auto max-w-6xl px-6">
-          <p className="text-sm font-medium tracking-wide text-neutral-500 uppercase">
+          <p className="text-sm font-medium tracking-wide text-white/50 uppercase">
             Everything in one place
           </p>
           <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-balance md:text-4xl">
@@ -198,7 +198,7 @@ export function HomeLanding() {
                 }`}
                 style={{ transitionDelay: `${150 + index * 80}ms` }}
               >
-                <div className="mb-5 size-20 overflow-hidden rounded-xl">
+                <div className="mb-5 size-20 overflow-hidden rounded-xl ring-1 ring-white/10">
                   <Image
                     src={feature.icon}
                     alt=""
@@ -208,7 +208,7 @@ export function HomeLanding() {
                   />
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight">{feature.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-neutral-500">
+                <p className="mt-2 text-[15px] leading-relaxed text-white/60">
                   {feature.desc}
                 </p>
               </div>
