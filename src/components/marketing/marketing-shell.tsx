@@ -116,19 +116,19 @@ export function MarketingFooter({
 
   return (
     <footer
-      className={`relative z-20 mt-auto shrink-0 border-t py-10 text-center text-sm ${
+      className={`relative z-20 mt-auto shrink-0 border-t border-white/10 py-10 text-center text-sm text-white/65 ${
         glass
-          ? "border-white/15 bg-neutral-950/75 text-white/75 backdrop-blur-xl"
-          : "border-black/5 bg-white text-neutral-500"
+          ? "bg-[#2c2c2e]/90 backdrop-blur-xl"
+          : "bg-[#2c2c2e]"
       }`}
     >
       <div className="mx-auto max-w-6xl px-6">
         <Image
-          src={glass ? brand.logoWhiteLandscape : brand.logoGreyLandscape}
+          src={brand.logoWhiteLandscape}
           alt="RentalsLogic"
           width={140}
           height={34}
-          className={`mx-auto h-7 w-auto ${glass ? "opacity-90" : "opacity-80"}`}
+          className="mx-auto h-7 w-auto opacity-90"
         />
         <p className="mt-6">
           Tenants: use the invitation link in your email to access your portal.
@@ -142,11 +142,7 @@ export function MarketingFooter({
             href="https://paradigmstudio.net/"
             target="_blank"
             rel="noopener noreferrer"
-            className={
-              glass
-                ? "text-white underline underline-offset-2 hover:text-white/90"
-                : "text-neutral-800 underline underline-offset-2 hover:text-neutral-950"
-            }
+            className="text-white underline underline-offset-2 hover:text-white/90"
           >
             Paradigm Studio
           </a>
