@@ -178,13 +178,13 @@ export function HomeLanding() {
                 }`}
                 style={{ transitionDelay: `${150 + index * 80}ms` }}
               >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f5f5f7]">
+                <div className="mb-5 overflow-hidden rounded-2xl ring-1 ring-black/5">
                   <Image
                     src={feature.icon}
                     alt=""
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 object-contain"
+                    width={160}
+                    height={160}
+                    className="h-20 w-20 object-cover"
                   />
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight">{feature.title}</h3>

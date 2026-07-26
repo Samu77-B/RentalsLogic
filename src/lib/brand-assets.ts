@@ -15,11 +15,11 @@ export const marketing = {
 } as const;
 
 export const icons = {
-  property: "/icons/HouseRentIcon.png",
+  property: "/icons/property-inventory-icon.png",
   apartment: "/icons/Apartment.png",
-  documents: "/icons/Documents.png",
-  tenant: "/icons/Profile_Icon.png",
-  meters: "/icons/MeterDual.png",
+  documents: "/icons/inspection-reports-icon.png",
+  tenant: "/icons/tenant-portal-icon.png",
+  meters: "/icons/meters-compliance-icon.png",
   maintenance: "/icons/Icon_Support.png",
   addProperty: "/icons/AddProp_Icon.png",
 } as const;
