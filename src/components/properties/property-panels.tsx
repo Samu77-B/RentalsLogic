@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { Plus } from "lucide-react";
+import { Camera, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -40,16 +40,70 @@ interface Document {
   storagePath: string;
 }
 
+interface MeterScanResult {
+  readingType: "ELECTRIC" | "GAS" | "WATER";
+  readingValue: number;
+  confidence: "high" | "medium" | "low";
+  notes?: string;
+}
+
+const emptyReadingForm = () => ({
+  readingType: "ELECTRIC",
+  readingValue: "",
+  readingDate: new Date().toISOString().split("T")[0],
+  photoUrl: "",
+});
+
 export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
   const readingsUrl = `/api/properties/${propertyId}/meter-readings`;
   const { data: readings, mutate } = useSWR<MeterReading[]>(readingsUrl, swrFetcher);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    readingType: "ELECTRIC",
-    readingValue: "",
-    readingDate: new Date().toISOString().split("T")[0],
-    photoUrl: "",
-  });
+  const [scanning, setScanning] = useState(false);
+  const [form, setForm] = useState(emptyReadingForm);
+
+  async function scanMeterPhoto(imageUrl: string) {
+    setScanning(true);
+    try {
+      const res = await fetch("/api/meters/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      const data = (await res.json().catch(() => ({}))) as MeterScanResult & {
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(data.error || "Could not scan meter photo");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        photoUrl: imageUrl,
+        readingType: data.readingType || prev.readingType,
+        readingValue:
+          typeof data.readingValue === "number"
+            ? String(data.readingValue)
+            : prev.readingValue,
+      }));
+
+      const confidenceNote =
+        data.confidence === "low"
+          ? " Low confidence — please double-check."
+          : "";
+      toast.success(
+        `Detected ${data.readingType.toLowerCase()} reading ${data.readingValue}.${confidenceNote}`
+      );
+    } catch (err) {
+      setForm((prev) => ({ ...prev, photoUrl: imageUrl }));
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Could not scan this photo. Enter the reading manually."
+      );
+    } finally {
+      setScanning(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,12 +117,7 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
       if (!res.ok) throw new Error(data.error || "Failed to save reading");
 
       setOpen(false);
-      setForm({
-        readingType: "ELECTRIC",
-        readingValue: "",
-        readingDate: new Date().toISOString().split("T")[0],
-        photoUrl: "",
-      });
+      setForm(emptyReadingForm());
       await reloadSWR(mutate, readingsUrl);
       toast.success("Reading saved");
     } catch (err) {
@@ -78,13 +127,56 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">Meter Readings</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Reading</Button>} />
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            if (!next) {
+              setForm(emptyReadingForm());
+              setScanning(false);
+            }
+          }}
+        >
+          <DialogTrigger
+            render={
+              <Button size="sm" className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Reading
+              </Button>
+            }
+          />
           <DialogContent>
-            <DialogHeader><DialogTitle>Record Meter Reading</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Record Meter Reading</DialogTitle>
+            </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="rounded-xl border border-border bg-muted/40 p-3">
+                <p className="text-sm font-medium text-foreground">Scan meter</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Take or upload a photo — we&apos;ll detect the meter type and reading.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <FileUpload
+                    capture
+                    label="Scan meter photo"
+                    onUpload={scanMeterPhoto}
+                  />
+                  {scanning && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Loader2 className="size-3.5 animate-spin" />
+                      Reading numbers…
+                    </span>
+                  )}
+                  {form.photoUrl && !scanning && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-foreground">
+                      <Camera className="size-3.5" />
+                      Photo attached
+                    </span>
+                  )}
+                </div>
+              </div>
               <div>
                 <Label>Type</Label>
                 <Select
@@ -118,11 +210,9 @@ export function MeterReadingsPanel({ propertyId }: { propertyId: string }) {
                   onChange={(e) => setForm({ ...form, readingDate: e.target.value })}
                 />
               </div>
-              <FileUpload
-                label="Meter photo"
-                onUpload={(url) => setForm({ ...form, photoUrl: url })}
-              />
-              <Button type="submit" className="w-full">Save Reading</Button>
+              <Button type="submit" className="w-full" disabled={scanning}>
+                Save Reading
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -175,10 +265,17 @@ export function DocumentsPanel({ propertyId }: { propertyId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">Documents</h2>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Upload</Button>} />
+          <DialogTrigger
+            render={
+              <Button size="sm" className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Upload
+              </Button>
+            }
+          />
           <DialogContent>
             <DialogHeader><DialogTitle>Upload Document</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -11,6 +11,8 @@ interface FileUploadProps {
   accept?: string;
   className?: string;
   label?: string;
+  /** Prefer device camera when available (mobile). */
+  capture?: boolean;
 }
 
 const OFFLINE_KEY = "rentalslogic-pending-uploads";
@@ -20,6 +22,7 @@ export function FileUpload({
   accept = "image/*",
   className,
   label = "Upload file",
+  capture = false,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -67,10 +70,12 @@ export function FileUpload({
         ref={inputRef}
         type="file"
         accept={accept}
+        capture={capture ? "environment" : undefined}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) handleFile(file);
+          e.target.value = "";
         }}
       />
       <Button
@@ -78,6 +83,7 @@ export function FileUpload({
         variant="outline"
         size="sm"
         disabled={loading}
+        className="text-foreground"
         onClick={() => inputRef.current?.click()}
       >
         {loading ? (
