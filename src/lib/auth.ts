@@ -40,6 +40,15 @@ export async function getCurrentDbUser() {
           dashboardUrl: dashboardUrl(),
         }).catch((err) => console.error("Landlord welcome email failed:", err));
       }
+    } else {
+      // Keep ADMIN in sync if Clerk publicMetadata is updated later.
+      const metaRole = clerkUser.publicMetadata?.role as UserRole | undefined;
+      if (metaRole === UserRole.ADMIN && user.role !== UserRole.ADMIN) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { role: UserRole.ADMIN },
+        });
+      }
     }
 
     return user;
@@ -66,6 +75,14 @@ export async function requireLandlord() {
 export async function requireTenant() {
   const user = await requireAuth();
   if (user.role !== UserRole.TENANT && user.role !== UserRole.ADMIN) {
+    throw new Error("Forbidden");
+  }
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await requireAuth();
+  if (user.role !== UserRole.ADMIN) {
     throw new Error("Forbidden");
   }
   return user;

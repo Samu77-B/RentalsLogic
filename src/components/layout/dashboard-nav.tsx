@@ -12,6 +12,9 @@ import {
   CreditCard,
   LayoutDashboard,
   Settings,
+  BookOpen,
+  Lightbulb,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { routes } from "@/config/routes";
@@ -25,6 +28,9 @@ const navItems = [
   { href: routes.dashboard.maintenance, label: "Maintenance", icon: Wrench },
   { href: routes.dashboard.certificates, label: "Certificates", icon: Award },
   { href: routes.dashboard.billing, label: "Billing", icon: CreditCard },
+  { href: routes.dashboard.howTo, label: "How to", icon: BookOpen },
+  { href: routes.dashboard.tips, label: "Tips", icon: Lightbulb },
+  { href: routes.dashboard.news, label: "News", icon: Newspaper },
   { href: routes.dashboard.settings, label: "Settings", icon: Settings },
 ];
 

@@ -444,3 +444,42 @@ model ActivityLog {
   @@index([userId])
   @@index([createdAt])
 }
+
+model LandlordTip {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  category  String?
+  published Boolean  @default(true)
+  sortOrder Int      @default(0)
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
+  @@index([createdAt])
+}
+
+enum NewsCategory {
+  LANDLORD_LAW
+  TENANT_LAW
+  UK_NEWS
+}
+
+model NewsArticle {
+  id          String       @id @default(cuid())
+  title       String
+  summary     String       @db.Text
+  body        String?      @db.Text
+  category    NewsCategory @default(UK_NEWS)
+  sourceName  String?
+  sourceUrl   String?
+  published   Boolean      @default(true)
+  publishedAt DateTime     @default(now())
+  authorId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([published, publishedAt])
+  @@index([category])
+}

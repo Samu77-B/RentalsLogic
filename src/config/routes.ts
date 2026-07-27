@@ -7,6 +7,9 @@ export const routes = {
     maintenance: "/dashboard/maintenance",
     certificates: "/dashboard/certificates",
     billing: "/dashboard/billing",
+    howTo: "/dashboard/how-to",
+    tips: "/dashboard/tips",
+    news: "/dashboard/news",
     settings: "/dashboard/settings",
   },
   tenant: {
