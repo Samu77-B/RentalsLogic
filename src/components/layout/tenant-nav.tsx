@@ -9,6 +9,7 @@ import {
   Wrench,
   FileText,
   Gauge,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { routes } from "@/config/routes";
@@ -20,6 +21,7 @@ const navItems = [
   { href: routes.tenant.maintenance, label: "Maintenance", icon: Wrench },
   { href: routes.tenant.documents, label: "Documents", icon: FileText },
   { href: routes.tenant.meters, label: "Meters", icon: Gauge },
+  { href: routes.tenant.settings, label: "Settings", icon: Settings },
 ];
 
 export function TenantNav({

@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { requireLandlord } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/api";
 import { isPropertyOwner } from "@/lib/permissions";
-import { sendTenantInvite } from "@/lib/email";
+import { appBaseUrl, sendTenantInvite } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { TenancyStatus } from "@prisma/client";
 import {
@@ -111,15 +111,24 @@ export async function POST(request: Request, { params }: Params) {
       });
     });
 
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/tenant/accept?token=${inviteToken}`;
-    await sendTenantInvite({
+    const inviteUrl = `${appBaseUrl()}/tenant/accept?token=${inviteToken}`;
+    const emailResult = await sendTenantInvite({
       to: tenantEmail,
       tenantName,
       propertyAddress: property.address,
       inviteUrl,
     });
 
-    return jsonOk({ ...tenancy, inviteUrl }, 201);
+    return jsonOk(
+      {
+        ...tenancy,
+        inviteUrl,
+        emailSent: emailResult.sent,
+        emailStubbed: Boolean(emailResult.stubbed),
+        emailError: emailResult.error ?? null,
+      },
+      201
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create tenant";
     return jsonError(message, message === "Unauthorized" ? 401 : 500);

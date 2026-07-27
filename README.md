@@ -41,7 +41,9 @@ cp .env.example .env
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — [Clerk](https://clerk.com)
    - `BLOB_READ_WRITE_TOKEN` — [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
    - `STRIPE_*` — Stripe products/prices for subscription tiers
-   - `RESEND_API_KEY` — optional, emails log to console without it
+   - `RESEND_API_KEY` — required for tenant invite emails (without it, invites are created but only the copyable link works)
+   - `RESEND_FROM_EMAIL` — verified sender, e.g. `RentalsLogic <noreply@yourdomain.com>`
+   - `NEXT_PUBLIC_APP_URL` — public site URL used in invite links
 
 3. Install and migrate:
 

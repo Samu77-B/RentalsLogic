@@ -65,6 +65,18 @@ export async function POST(request: Request) {
       });
     }
 
+    await prisma.tenantProfile.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        phone: tenancy.tenantPhone,
+        notifyEmail: true,
+      },
+      update: {
+        phone: tenancy.tenantPhone ?? undefined,
+      },
+    });
+
     await prisma.tenancy.update({
       where: { id: tenancy.id },
       data: {

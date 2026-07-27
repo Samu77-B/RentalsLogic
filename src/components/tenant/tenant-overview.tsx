@@ -63,11 +63,18 @@ export function TenantOverview() {
         ))}
       </div>
 
-      <Link href={routes.tenant.meters}>
-        <Button variant="outline">
-          <Gauge className="mr-2 h-4 w-4" /> Submit meter reading
-        </Button>
-      </Link>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Link href={routes.tenant.meters}>
+          <Button variant="outline" className="w-full sm:w-auto">
+            <Gauge className="mr-2 h-4 w-4" /> Submit meter reading
+          </Button>
+        </Link>
+        <Link href={routes.tenant.settings}>
+          <Button variant="outline" className="w-full sm:w-auto">
+            WhatsApp / Telegram alerts
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

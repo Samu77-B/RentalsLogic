@@ -4,7 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Loader2, X, User } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -460,7 +460,17 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
       setAddOpen(false);
       setForm(emptyTenantForm());
       await reloadSWR(mutate, tenantsUrl);
-      toast.success("Tenant added and invite created");
+      if (data.emailSent) {
+        toast.success("Tenant added — invite email sent");
+      } else if (data.emailStubbed) {
+        toast.warning(
+          "Tenant added, but email is not configured (RESEND_API_KEY). Copy the invite link below."
+        );
+      } else {
+        toast.warning(
+          `Tenant added, but invite email failed${data.emailError ? `: ${data.emailError}` : ""}. Copy the invite link below.`
+        );
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add tenant");
     } finally {
@@ -496,6 +506,29 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
       toast.error(err instanceof Error ? err.message : "Failed to update tenant");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function resendInvite(id: string) {
+    try {
+      const res = await fetch(`/api/tenancies/${id}/resend-invite`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to resend invite");
+      if (data.inviteUrl) setLastInviteUrl(data.inviteUrl);
+      await reloadSWR(mutate, tenantsUrl);
+      if (data.emailSent) {
+        toast.success("Invite email resent");
+      } else if (data.emailStubbed) {
+        toast.warning(
+          "Email is not configured (RESEND_API_KEY). Copy the invite link below."
+        );
+      } else {
+        toast.warning(
+          `Invite email failed${data.emailError ? `: ${data.emailError}` : ""}. Copy the invite link below.`
+        );
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend invite");
     }
   }
 
@@ -536,7 +569,22 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="py-4">
             <p className="text-sm font-medium">Tenant invite link</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Share this if the email did not arrive. The tenant must sign in with the invited email.
+            </p>
             <p className="mt-2 break-all text-xs text-muted-foreground">{lastInviteUrl}</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={async () => {
+                await navigator.clipboard.writeText(lastInviteUrl);
+                toast.success("Invite link copied");
+              }}
+            >
+              Copy link
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -585,10 +633,15 @@ export function TenantsPanel({ propertyId }: { propertyId: string }) {
                     View contract: {lease.title}
                   </a>
                 )}
-                <div className="flex gap-2 pt-2">
+                <div className="flex flex-wrap gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={() => openEdit(t)}>
                     <Pencil className="mr-1 h-3 w-3" />Edit
                   </Button>
+                  {t.status === "PENDING" && (
+                    <Button size="sm" variant="outline" onClick={() => resendInvite(t.id)}>
+                      <Mail className="mr-1 h-3 w-3" />Resend invite
+                    </Button>
+                  )}
                   <Button size="sm" variant="ghost" onClick={() => deleteTenant(t.id, t.tenantName)}>
                     <Trash2 className="mr-1 h-3 w-3" />Remove
                   </Button>

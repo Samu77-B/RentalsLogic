@@ -18,6 +18,7 @@ export const routes = {
     maintenance: "/tenant/maintenance",
     documents: "/tenant/documents",
     meters: "/tenant/meters",
+    settings: "/tenant/settings",
   },
   auth: {
     signIn: "/sign-in",
