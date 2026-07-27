@@ -74,7 +74,7 @@ export function TenantNav({
               className={cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-white text-neutral-950 shadow-sm"
+                  ? "bg-white text-neutral-950 shadow-sm ring-1 ring-brand/45"
                   : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >

@@ -18,12 +18,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-svh bg-[#2c2c2e] text-white">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-[#252528]/90 backdrop-blur-xl md:flex md:flex-col">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-brand/20 bg-[#252528]/90 backdrop-blur-xl md:flex md:flex-col">
         <DashboardNav />
       </aside>
 
       <div className="flex min-h-svh flex-col md:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#2c2c2e]/70 px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-brand/20 bg-[#2c2c2e]/70 px-4 backdrop-blur-xl sm:px-6">
           <div className="flex items-center gap-2 md:hidden">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
@@ -40,7 +40,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               />
               <SheetContent
                 side="left"
-                className="w-[min(100%,18rem)] border-white/10 bg-[#252528] p-0 text-white"
+                className="w-[min(100%,18rem)] border-brand/20 bg-[#252528] p-0 text-white"
                 showCloseButton
               >
                 <SheetHeader className="sr-only">

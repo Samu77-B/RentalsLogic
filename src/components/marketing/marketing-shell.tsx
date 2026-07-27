@@ -57,7 +57,7 @@ function MarketingNav({ light }: { light: boolean }) {
         className={
           light
             ? "inline-flex h-9 items-center rounded-full border border-neutral-900 bg-neutral-900 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
-            : "inline-flex h-9 items-center rounded-full border border-white bg-transparent px-4 text-sm font-medium text-white transition hover:bg-white/10"
+            : "inline-flex h-9 items-center rounded-full border border-brand/45 bg-transparent px-4 text-sm font-medium text-white transition hover:bg-brand/10"
         }
       >
         {label}
@@ -98,7 +98,7 @@ function MarketingNav({ light }: { light: boolean }) {
       <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
         <button
           type="button"
-          className="inline-flex h-9 items-center rounded-full border border-white bg-transparent px-4 text-sm font-medium text-white transition hover:bg-white/10"
+          className="inline-flex h-9 items-center rounded-full border border-brand/45 bg-transparent px-4 text-sm font-medium text-white transition hover:bg-brand/10"
         >
           Get started
         </button>
@@ -116,7 +116,7 @@ export function MarketingFooter({
 
   return (
     <footer
-      className={`relative z-20 mt-auto shrink-0 border-t border-white/10 py-10 text-center text-sm text-white/65 ${
+      className={`relative z-20 mt-auto shrink-0 border-t border-brand/20 py-10 text-center text-sm text-white/65 ${
         glass
           ? "bg-[#2c2c2e]/90 backdrop-blur-xl"
           : "bg-[#2c2c2e]"

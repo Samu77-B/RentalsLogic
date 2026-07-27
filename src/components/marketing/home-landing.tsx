@@ -181,7 +181,7 @@ export function HomeLanding() {
         </div>
       </section>
 
-      <section className="border-b border-white/10 bg-[#2c2c2e] py-24 text-white md:py-32">
+      <section className="border-b border-brand/20 bg-[#2c2c2e] py-24 text-white md:py-32">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <p className="text-sm font-medium tracking-wide text-white/50 uppercase">
@@ -312,7 +312,7 @@ export function HomeLanding() {
                   <SignUpButton mode="redirect" forceRedirectUrl="/auth/redirect">
                     <button
                       type="button"
-                      className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-neutral-900 text-sm font-medium text-white transition hover:bg-neutral-800"
+                      className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-neutral-900 text-sm font-medium text-white ring-1 ring-brand/40 transition hover:bg-neutral-800 hover:ring-brand/60"
                     >
                       Get started
                     </button>

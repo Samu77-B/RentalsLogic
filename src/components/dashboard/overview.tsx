@@ -19,10 +19,10 @@ export function DashboardOverview() {
         <div className="h-10 w-48 rounded-full bg-white/10" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-32 rounded-3xl bg-white/10 ring-1 ring-white/10" />
+            <div key={i} className="h-32 rounded-3xl bg-white/10 ring-1 ring-brand/15" />
           ))}
         </div>
-        <div className="h-48 rounded-3xl bg-white/10 ring-1 ring-white/10" />
+        <div className="h-48 rounded-3xl bg-white/10 ring-1 ring-brand/15" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export function DashboardOverview() {
 
       {propertyCount === 0 && (
         <Reveal delay={80}>
-          <div className="rounded-3xl bg-white/8 px-6 py-8 ring-1 ring-white/10 sm:px-8">
+          <div className="rounded-3xl bg-white/8 px-6 py-8 ring-1 ring-brand/20 sm:px-8">
             <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
               Welcome to your landlord workspace
             </h2>
@@ -137,7 +137,7 @@ export function DashboardOverview() {
             <Link
               href={href}
               className={cn(
-                "group flex h-full flex-col rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-black/5 transition",
+                "group flex h-full flex-col rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-brand/20 transition",
                 "hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-28px_rgba(0,0,0,0.55)]"
               )}
             >
@@ -162,7 +162,7 @@ export function DashboardOverview() {
       </div>
 
       <Reveal delay={280}>
-        <section className="rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-black/5 sm:p-6">
+        <section className="rounded-3xl bg-white p-5 text-neutral-950 ring-1 ring-brand/20 sm:p-6">
           <div className="flex items-center gap-2">
             <Activity className="size-4 text-neutral-500" strokeWidth={1.75} />
             <h2 className="text-base font-semibold tracking-tight">Recent activity</h2>

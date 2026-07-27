@@ -89,9 +89,9 @@ export function DashboardNav({
               className={cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-white text-neutral-950 shadow-sm"
+                  ? "bg-white text-neutral-950 shadow-sm ring-1 ring-brand/45"
                   : item.highlight
-                    ? "bg-white/18 text-white ring-1 ring-white/25 hover:bg-white/25"
+                    ? "bg-brand/15 text-white ring-1 ring-brand/40 hover:bg-brand/25"
                     : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >
