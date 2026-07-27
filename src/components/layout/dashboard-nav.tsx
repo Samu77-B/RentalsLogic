@@ -22,7 +22,12 @@ import { brand } from "@/lib/brand-assets";
 
 const navItems = [
   { href: routes.dashboard.root, label: "Overview", icon: LayoutDashboard },
-  { href: routes.dashboard.properties, label: "Properties", icon: Building2 },
+  {
+    href: routes.dashboard.properties,
+    label: "Properties",
+    icon: Building2,
+    highlight: true,
+  },
   { href: routes.dashboard.tenants, label: "Tenants", icon: Users },
   { href: routes.dashboard.inspections, label: "Inspections", icon: ClipboardList },
   { href: routes.dashboard.maintenance, label: "Maintenance", icon: Wrench },
@@ -85,7 +90,9 @@ export function DashboardNav({
                 "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "bg-white text-neutral-950 shadow-sm"
-                  : "text-white/60 hover:bg-white/10 hover:text-white"
+                  : item.highlight
+                    ? "bg-white/18 text-white ring-1 ring-white/25 hover:bg-white/25"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="size-4 shrink-0" strokeWidth={1.75} />
