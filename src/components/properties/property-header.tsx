@@ -81,10 +81,10 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
   return (
     <div className="mb-6 space-y-4">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
+        <h1 className="break-words text-3xl font-semibold tracking-tight text-white md:text-4xl">
           {property.address}
         </h1>
-        <p className="mt-1 text-white/60">
+        <p className="mt-1 break-words text-white/60">
           £{property.rentAmount}/{property.rentPeriod?.toLowerCase()} · {property.propertyType}
           {property.city ? ` · ${property.city}` : ""}
         </p>
@@ -92,7 +92,7 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
 
       <div className="overflow-hidden rounded-3xl bg-white text-neutral-950 ring-1 ring-black/5">
         {property.coverPhotoUrl ? (
-          <div className="relative h-52 w-full sm:h-64">
+          <div className="relative h-48 w-full sm:h-64">
             <Image
               src={property.coverPhotoUrl}
               alt={property.address}
@@ -102,7 +102,7 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
             />
           </div>
         ) : (
-          <div className="flex h-44 flex-col items-center justify-center gap-3 bg-[#f5f5f7] px-6 text-center">
+          <div className="flex h-40 flex-col items-center justify-center gap-3 bg-[#f5f5f7] px-6 text-center sm:h-44">
             <span className="inline-flex size-12 items-center justify-center rounded-full bg-white text-neutral-700 ring-1 ring-black/5">
               <Camera className="size-5" strokeWidth={1.75} />
             </span>
@@ -116,8 +116,9 @@ export function PropertyHeader({ propertyId }: { propertyId: string }) {
             </div>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-3 border-t border-black/5 p-4">
+        <div className="flex flex-col gap-3 border-t border-black/5 p-4 sm:flex-row sm:flex-wrap sm:items-center">
           <FileUpload
+            className="w-full sm:w-auto"
             label={property.coverPhotoUrl ? "Change photo" : "Upload property photo"}
             onUpload={saveCoverPhoto}
           />

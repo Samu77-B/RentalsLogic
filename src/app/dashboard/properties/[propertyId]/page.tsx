@@ -17,27 +17,39 @@ export default async function PropertyDetailPage({ params }: Props) {
   return (
     <DashboardShell>
       <PropertyHeader propertyId={propertyId} />
-      <Tabs defaultValue="inventory">
-        <TabsList>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-          <TabsTrigger value="tenants">Tenants</TabsTrigger>
-          <TabsTrigger value="meters">Meters</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-        </TabsList>
-        <TabsContent value="inventory" className="mt-6">
+      <Tabs defaultValue="inventory" className="min-w-0">
+        <div className="-mx-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <TabsList className="h-auto min-w-max gap-1 px-1">
+            <TabsTrigger value="inventory" className="flex-none px-3">
+              Inventory
+            </TabsTrigger>
+            <TabsTrigger value="tenants" className="flex-none px-3">
+              Tenants
+            </TabsTrigger>
+            <TabsTrigger value="meters" className="flex-none px-3">
+              Meters
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex-none px-3">
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="flex-none px-3">
+              Maintenance
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="inventory" className="mt-6 min-w-0">
           <PropertyDetail propertyId={propertyId} />
         </TabsContent>
-        <TabsContent value="tenants" className="mt-6">
+        <TabsContent value="tenants" className="mt-6 min-w-0">
           <TenantsPanel propertyId={propertyId} />
         </TabsContent>
-        <TabsContent value="meters" className="mt-6">
+        <TabsContent value="meters" className="mt-6 min-w-0">
           <MeterReadingsPanel propertyId={propertyId} />
         </TabsContent>
-        <TabsContent value="documents" className="mt-6">
+        <TabsContent value="documents" className="mt-6 min-w-0">
           <DocumentsPanel propertyId={propertyId} />
         </TabsContent>
-        <TabsContent value="maintenance" className="mt-6">
+        <TabsContent value="maintenance" className="mt-6 min-w-0">
           <MaintenanceManager propertyId={propertyId} />
         </TabsContent>
       </Tabs>

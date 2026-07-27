@@ -81,12 +81,12 @@ export function MaintenanceManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold">Maintenance</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           {!lockedPropertyId && (
             <Select value={selectedPropertyId} onValueChange={(v) => setSelectedPropertyId(v ?? "")}>
-              <SelectTrigger className="w-64"><SelectValue placeholder="Select property" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-64"><SelectValue placeholder="Select property" /></SelectTrigger>
               <SelectContent>
                 {propertyList?.map((p: { id: string; address: string }) => (
                   <SelectItem key={p.id} value={p.id}>{p.address}</SelectItem>
@@ -95,7 +95,14 @@ export function MaintenanceManager({
             </Select>
           )}
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger render={<Button disabled={!propertyId}><Plus className="mr-2 h-4 w-4" />New Request</Button>} />
+            <DialogTrigger
+              render={
+                <Button disabled={!propertyId} className="w-full sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Request
+                </Button>
+              }
+            />
             <DialogContent>
               <DialogHeader><DialogTitle>Maintenance Request</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">

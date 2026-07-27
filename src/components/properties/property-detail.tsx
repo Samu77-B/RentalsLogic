@@ -286,7 +286,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
   return (
     <div className="space-y-8">
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-semibold">Rooms & Inventory</h2>
           <Dialog
             open={roomOpen}
@@ -295,7 +295,14 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
               if (!open) setRoomForm({ name: "", roomType: "BEDROOM", photoUrls: [] });
             }}
           >
-            <DialogTrigger render={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Room</Button>} />
+            <DialogTrigger
+              render={
+                <Button size="sm" className="w-full shrink-0 sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Room
+                </Button>
+              }
+            />
             <DialogContent>
               <DialogHeader><DialogTitle>Add Room</DialogTitle></DialogHeader>
               <form onSubmit={addRoom} className="space-y-4">
@@ -364,12 +371,12 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
         {property.rooms?.map((room) => (
           <Card key={room.id}>
             <CardContent className="pt-6">
-              <div className="mb-4 flex items-center justify-between gap-2">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="font-semibold">{room.name}</h3>
                   <Badge variant="outline">{ROOM_TYPE_LABELS[room.roomType] ?? room.roomType}</Badge>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -472,7 +479,7 @@ export function PropertyDetail({ propertyId }: PropertyDetailProps) {
               </div>
 
               <div className="mb-4 space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-medium text-muted-foreground">Room photos</p>
                   <FileUpload label="Add room photo" onUpload={(url) => addRoomPhoto(room.id, url)} />
                 </div>
